@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"runtime"
 
-	"github.com/metafates/go-template/app"
-	"github.com/metafates/go-template/color"
+	"github.com/Inno-Gang/goodle-cli/app"
+	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/samber/lo"
 
 	"github.com/spf13/cobra"

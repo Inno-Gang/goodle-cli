@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/metafates/go-template/filesystem"
-	"github.com/metafates/go-template/key"
-	"github.com/metafates/go-template/where"
+	"github.com/Inno-Gang/goodle-cli/filesystem"
+	"github.com/Inno-Gang/goodle-cli/key"
+	"github.com/Inno-Gang/goodle-cli/where"
 	"github.com/samber/lo"
 )
 

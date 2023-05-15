@@ -1,4 +1,4 @@
-module github.com/metafates/go-template
+module github.com/Inno-Gang/goodle-cli
 
 go 1.19
 

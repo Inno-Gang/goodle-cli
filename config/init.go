@@ -3,9 +3,9 @@ package config
 import (
 	"strings"
 
-	"github.com/metafates/go-template/app"
-	"github.com/metafates/go-template/filesystem"
-	"github.com/metafates/go-template/where"
+	"github.com/Inno-Gang/goodle-cli/app"
+	"github.com/Inno-Gang/goodle-cli/filesystem"
+	"github.com/Inno-Gang/goodle-cli/where"
 	"github.com/spf13/viper"
 )
 

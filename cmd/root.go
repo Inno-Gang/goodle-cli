@@ -3,15 +3,15 @@ package cmd
 import (
 	"fmt"
 	"github.com/charmbracelet/log"
-	"github.com/metafates/go-template/style"
+	"github.com/Inno-Gang/goodle-cli/style"
 	"os"
 	"strings"
 
 	cc "github.com/ivanpirog/coloredcobra"
-	"github.com/metafates/go-template/app"
-	"github.com/metafates/go-template/filesystem"
-	"github.com/metafates/go-template/icon"
-	"github.com/metafates/go-template/where"
+	"github.com/Inno-Gang/goodle-cli/app"
+	"github.com/Inno-Gang/goodle-cli/filesystem"
+	"github.com/Inno-Gang/goodle-cli/icon"
+	"github.com/Inno-Gang/goodle-cli/where"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )

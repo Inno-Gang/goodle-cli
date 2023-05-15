@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/metafates/go-template/app"
-	"github.com/metafates/go-template/color"
-	"github.com/metafates/go-template/filesystem"
-	"github.com/metafates/go-template/icon"
-	"github.com/metafates/go-template/util"
-	"github.com/metafates/go-template/where"
+	"github.com/Inno-Gang/goodle-cli/app"
+	"github.com/Inno-Gang/goodle-cli/color"
+	"github.com/Inno-Gang/goodle-cli/filesystem"
+	"github.com/Inno-Gang/goodle-cli/icon"
+	"github.com/Inno-Gang/goodle-cli/util"
+	"github.com/Inno-Gang/goodle-cli/where"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )
