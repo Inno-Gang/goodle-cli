@@ -2,16 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/charmbracelet/log"
 	"github.com/Inno-Gang/goodle-cli/style"
+	"github.com/Inno-Gang/goodle-cli/tui"
+	"github.com/charmbracelet/log"
 	"os"
 	"strings"
 
-	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/Inno-Gang/goodle-cli/app"
 	"github.com/Inno-Gang/goodle-cli/filesystem"
 	"github.com/Inno-Gang/goodle-cli/icon"
 	"github.com/Inno-Gang/goodle-cli/where"
+	cc "github.com/ivanpirog/coloredcobra"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +29,10 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if lo.Must(cmd.Flags().GetBool("version")) {
 			versionCmd.Run(versionCmd, args)
+			return
 		}
+
+		handleErr(tui.Run())
 	},
 }
 
