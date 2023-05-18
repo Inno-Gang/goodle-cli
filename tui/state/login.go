@@ -103,6 +103,7 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 					return NewLoading("Launching nukes...")
 				},
 				func() tea.Msg {
+					// TODO: save to cache or something, so that the user won't need to reauth again
 					client, err := l.authenticator.Authenticate(m.Context(), l.credentials())
 					if err != nil {
 						return err
