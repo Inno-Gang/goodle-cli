@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"strings"
+	"time"
 )
 
 type loginKeyMap struct {
@@ -67,7 +68,7 @@ func (*Login) Intermediate() bool {
 	return false
 }
 
-func (*Login) Header() string {
+func (*Login) Title() string {
 	return "Login"
 }
 
@@ -77,7 +78,7 @@ func (l *Login) KeyMap() help.KeyMap {
 
 func (*Login) Resize(base.Size) {}
 
-func (l *Login) Update(_ base.Model, msg tea.Msg) tea.Cmd {
+func (l *Login) Update(model base.Model, msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 
 	fields := l.textFields()
@@ -86,9 +87,20 @@ func (l *Login) Update(_ base.Model, msg tea.Msg) tea.Cmd {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, l.keyMap.confirm):
-			return func() tea.Msg {
-				return fmt.Errorf("not implemented")
-			}
+			return tea.Sequence(
+				func() tea.Msg {
+					return NewLoading("Launching nukes...")
+				},
+				func() tea.Msg {
+					// TODO: remove this. for testing purposes only
+					select {
+					case <-model.Context().Done():
+					case <-time.After(time.Second * 2):
+						return fmt.Errorf("not implemented")
+					}
+
+					return nil
+				})
 		case key.Matches(msg, l.keyMap.focusNext):
 			for i, curr := range fields[:len(fields)-1] {
 				next := fields[i+1]

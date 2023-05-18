@@ -21,6 +21,8 @@ type Model struct {
 
 	size base.Size
 
+	styles base.Styles
+
 	keyMap *keyMap
 	help   help.Model
 }
@@ -49,6 +51,7 @@ func New() *Model {
 		},
 		keyMap: newKeyMap(),
 		help:   help.New(),
+		styles: base.DefaultStyles(),
 	}
 
 	defer model.resize(model.Size())

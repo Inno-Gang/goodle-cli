@@ -7,8 +7,8 @@ import (
 
 type State interface {
 	Intermediate() bool
-	Header() string
 	KeyMap() help.KeyMap
+	Title() string
 
 	Resize(size Size)
 

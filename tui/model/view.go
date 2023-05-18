@@ -1,13 +1,28 @@
 package model
 
-func (m *Model) View() (view string) {
+import (
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/reflow/wordwrap"
+	"strings"
+)
+
+func (m *Model) View() string {
+	const newline = "\n"
+
+	header := m.styles.TitleBar.Render(m.styles.Title.Render(m.state.Title()))
+	view := wordwrap.String(m.state.View(m), m.size.Width)
 	keyMapHelp := m.help.View(m)
 
-	if header := m.state.Header(); header != "" {
-		view = header + "\n\n" + m.state.View(m)
-	} else {
-		view = m.state.View(m)
+	headerHeight := lipgloss.Height(header)
+	viewHeight := lipgloss.Height(view)
+	helpHeight := lipgloss.Height(keyMapHelp)
+
+	diff := m.size.Height - headerHeight - viewHeight - helpHeight
+
+	var filler string
+	if diff > 0 {
+		filler = strings.Repeat(newline, diff)
 	}
 
-	return view + "\n\n" + keyMapHelp
+	return header + newline + view + filler + newline + keyMapHelp
 }
