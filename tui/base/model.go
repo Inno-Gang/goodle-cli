@@ -12,6 +12,5 @@ type Size struct {
 type Model interface {
 	tea.Model
 
-	Size() Size
 	Context() context.Context
 }

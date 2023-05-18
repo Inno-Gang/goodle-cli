@@ -26,6 +26,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.back()
 			return m, nil
 		}
+	case base.MsgBack:
+		m.back()
+		return m, nil
 	case base.State:
 		return m, m.pushState(msg)
 	case error:

@@ -2,6 +2,7 @@ package state
 
 import (
 	"github.com/Inno-Gang/goodle-cli/icon"
+	"github.com/Inno-Gang/goodle-cli/style"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
 	"github.com/charmbracelet/bubbles/help"
@@ -64,7 +65,7 @@ func (e *Error) Update(_ base.Model, msg tea.Msg) tea.Cmd {
 }
 
 func (e *Error) View(base.Model) string {
-	return icon.Cross + " " + e.error.Error()
+	return style.Failure(icon.Cross + " " + e.error.Error())
 }
 
 func (*Error) Init(base.Model) tea.Cmd {

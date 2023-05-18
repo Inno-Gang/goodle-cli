@@ -54,15 +54,19 @@ func New() *Model {
 		styles: base.DefaultStyles(),
 	}
 
-	defer model.resize(model.Size())
+	defer model.resize(model.StateSize())
 
 	model.context, model.contextCancelFunc = context.WithCancel(context.Background())
 
 	return model
 }
 
-func (m *Model) Size() base.Size {
-	return m.size
+func (m *Model) StateSize() base.Size {
+	return base.Size{
+		Width: m.size.Width,
+		// TODO: should be calculated dynamically
+		Height: m.size.Height - 3,
+	}
 }
 
 func (m *Model) Context() context.Context {
@@ -76,7 +80,7 @@ func (m *Model) cancel() {
 
 func (m *Model) resize(size base.Size) {
 	m.size = size
-	m.state.Resize(size)
+	m.state.Resize(m.StateSize())
 }
 
 func (m *Model) back() {
@@ -89,7 +93,7 @@ func (m *Model) back() {
 	m.state = m.history.Pop()
 
 	// update size for old models
-	m.resize(m.Size())
+	m.state.Resize(m.StateSize())
 }
 
 func (m *Model) pushState(state base.State) tea.Cmd {
@@ -98,6 +102,7 @@ func (m *Model) pushState(state base.State) tea.Cmd {
 	}
 
 	m.state = state
+	m.state.Resize(m.StateSize())
 
 	return m.state.Init(m)
 }

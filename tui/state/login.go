@@ -8,8 +8,8 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/inno-gang/goodle/auth"
 	"strings"
-	"time"
 )
 
 type loginKeyMap struct {
@@ -28,13 +28,16 @@ func (l loginKeyMap) FullHelp() [][]key.Binding {
 }
 
 type Login struct {
-	username, password textinput.Model
-	keyMap             loginKeyMap
+	email, password textinput.Model
+	keyMap          loginKeyMap
+	authenticator   *auth.IuAuthenticator
 }
 
 func NewLogin() *Login {
+	authenticator := auth.NewIuAuthenticator()
+
 	username := textinput.New()
-	username.Placeholder = "Username"
+	username.Placeholder = "Email"
 	username.Validate = func(s string) error {
 		if strings.Contains(s, " ") {
 			return fmt.Errorf("whitespaces is not permitted")
@@ -48,8 +51,9 @@ func NewLogin() *Login {
 	password.Placeholder = "Password"
 
 	return &Login{
-		username: username,
-		password: password,
+		authenticator: authenticator,
+		email:         username,
+		password:      password,
 		keyMap: loginKeyMap{
 			confirm:   tuiutil.Bind("confirm", "enter"),
 			focusNext: tuiutil.Bind("focus next", "tab"),
@@ -59,8 +63,15 @@ func NewLogin() *Login {
 
 func (l *Login) textFields() []*textinput.Model {
 	return []*textinput.Model{
-		&l.username,
+		&l.email,
 		&l.password,
+	}
+}
+
+func (l *Login) credentials() auth.IuCredentials {
+	return auth.IuCredentials{
+		Email:    l.email.Value(),
+		Password: l.password.Value(),
 	}
 }
 
@@ -78,7 +89,7 @@ func (l *Login) KeyMap() help.KeyMap {
 
 func (*Login) Resize(base.Size) {}
 
-func (l *Login) Update(model base.Model, msg tea.Msg) tea.Cmd {
+func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 
 	fields := l.textFields()
@@ -92,14 +103,17 @@ func (l *Login) Update(model base.Model, msg tea.Msg) tea.Cmd {
 					return NewLoading("Launching nukes...")
 				},
 				func() tea.Msg {
-					// TODO: remove this. for testing purposes only
-					select {
-					case <-model.Context().Done():
-					case <-time.After(time.Second * 2):
-						return fmt.Errorf("not implemented")
+					client, err := l.authenticator.Authenticate(m.Context(), l.credentials())
+					if err != nil {
+						return err
 					}
 
-					return nil
+					newState, err := NewCourses(m.Context(), client)
+					if err != nil {
+						return err
+					}
+
+					return newState
 				})
 		case key.Matches(msg, l.keyMap.focusNext):
 			for i, curr := range fields[:len(fields)-1] {
@@ -130,9 +144,9 @@ func (l *Login) Update(model base.Model, msg tea.Msg) tea.Cmd {
 }
 
 func (l *Login) View(base.Model) string {
-	return l.username.View() + "\n\n" + l.password.View()
+	return l.email.View() + "\n\n" + l.password.View()
 }
 
 func (l *Login) Init(base.Model) tea.Cmd {
-	return l.username.Focus()
+	return l.email.Focus()
 }
