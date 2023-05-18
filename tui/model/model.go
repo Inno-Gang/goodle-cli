@@ -93,12 +93,11 @@ func (m *Model) back() {
 }
 
 func (m *Model) pushState(state base.State) tea.Cmd {
-	return func() tea.Msg {
-		if !m.state.Intermediate() {
-			m.history.Push(m.state)
-		}
-
-		m.state = state
-		return m.state.Init(m)
+	if !m.state.Intermediate() {
+		m.history.Push(m.state)
 	}
+
+	m.state = state
+
+	return m.state.Init(m)
 }

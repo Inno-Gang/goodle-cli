@@ -56,6 +56,5 @@ func (l *Loading) View(base.Model) string {
 }
 
 func (l *Loading) Init(base.Model) tea.Cmd {
-	// TODO: this message is lost somewhere, wtf
 	return l.spinner.Tick
 }
