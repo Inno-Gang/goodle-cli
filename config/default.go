@@ -26,6 +26,24 @@ fatal, error, warn, info, debug`,
 		"Whether the logger should report the caller location.",
 	},
 	// END LOGS
+
+	// AUTH
+	{
+		key.AuthEmail,
+		"",
+		"Innopolis email",
+	},
+	{
+		key.AuthPassword,
+		"",
+		"Innopolis password in a plaintext. Not recommended to use",
+	},
+	{
+		key.AuthRemember,
+		false,
+		"Remember password. Warning - passwords are stored in a plaintext",
+	},
+	// END AUTH
 }
 
 func setDefaults() {

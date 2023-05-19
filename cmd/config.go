@@ -3,8 +3,8 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/Inno-Gang/goodle-cli/style"
+	"github.com/charmbracelet/lipgloss"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,12 +13,12 @@ import (
 	"github.com/Inno-Gang/goodle-cli/app"
 	"golang.org/x/exp/slices"
 
-	levenshtein "github.com/ka-weihe/fast-levenshtein"
 	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/config"
 	"github.com/Inno-Gang/goodle-cli/filesystem"
 	"github.com/Inno-Gang/goodle-cli/icon"
 	"github.com/Inno-Gang/goodle-cli/where"
+	levenshtein "github.com/ka-weihe/fast-levenshtein"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

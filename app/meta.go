@@ -4,8 +4,8 @@ package app
 const Version = "0.0.1"
 
 const (
-	// App is the name of the application
-	Name = "goodle-cli"
+	// Name is the name of the application
+	Name = "goodle"
 
 	// DescriptionShort short description of the app
 	DescriptionShort = Name + " description"

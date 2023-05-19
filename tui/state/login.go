@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
 	"github.com/charmbracelet/bubbles/help"
@@ -9,6 +10,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/inno-gang/goodle/auth"
+	"github.com/inno-gang/goodle/moodle"
+	"github.com/spf13/viper"
 	"strings"
 )
 
@@ -61,6 +64,14 @@ func NewLogin() *Login {
 	}
 }
 
+func (l *Login) SetEmail(email string) {
+	l.email.SetValue(email)
+}
+
+func (l *Login) SetPassword(password string) {
+	l.password.SetValue(password)
+}
+
 func (l *Login) textFields() []*textinput.Model {
 	return []*textinput.Model{
 		&l.email,
@@ -73,6 +84,27 @@ func (l *Login) credentials() auth.IuCredentials {
 		Email:    l.email.Value(),
 		Password: l.password.Value(),
 	}
+}
+
+func (l *Login) saveCredentials() error {
+	credentials := l.credentials()
+
+	viper.Set(configKey.AuthEmail, credentials.Email)
+
+	if viper.GetBool(configKey.AuthRemember) {
+		viper.Set(configKey.AuthPassword, credentials.Password)
+	}
+
+	switch err := viper.WriteConfig(); err.(type) {
+	case viper.ConfigFileNotFoundError:
+		return viper.SafeWriteConfig()
+	default:
+		return err
+	}
+}
+
+func (l *Login) Client(m base.Model) (*moodle.Client, error) {
+	return l.authenticator.Authenticate(m.Context(), l.credentials())
 }
 
 func (*Login) Intermediate() bool {
@@ -103,11 +135,13 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 					return NewLoading("Launching nukes...")
 				},
 				func() tea.Msg {
-					// TODO: save to cache or something, so that the user won't need to reauth again
-					client, err := l.authenticator.Authenticate(m.Context(), l.credentials())
+					client, err := l.Client(m)
 					if err != nil {
 						return err
 					}
+
+					// TODO: log errors
+					_ = l.saveCredentials()
 
 					newState, err := NewCourses(m.Context(), client)
 					if err != nil {

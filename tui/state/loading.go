@@ -27,7 +27,7 @@ type Loading struct {
 func NewLoading(message string) *Loading {
 	return &Loading{
 		message: message,
-		spinner: spinner.New(),
+		spinner: spinner.New(spinner.WithSpinner(spinner.Dot)),
 		keyMap:  loadingKeyMap{},
 	}
 }
