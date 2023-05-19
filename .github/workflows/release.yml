@@ -40,6 +40,6 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --rm-dist --release-notes changelog-temp.md
+          args: release --clean --release-notes changelog-temp.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
