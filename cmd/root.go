@@ -70,7 +70,7 @@ func handleErr(err error) {
 	_, _ = fmt.Fprintf(
 		os.Stderr,
 		"%s %s\n",
-		style.Failure(icon.Cross),
+		style.Failure.Render(icon.Cross),
 		strings.Trim(err.Error(), " \n"),
 	)
 	os.Exit(1)

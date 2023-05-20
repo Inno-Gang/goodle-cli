@@ -65,7 +65,7 @@ func (e *Error) Update(_ base.Model, msg tea.Msg) tea.Cmd {
 }
 
 func (e *Error) View(base.Model) string {
-	return style.Failure(icon.Cross + " " + e.error.Error())
+	return style.Failure.Render(icon.Cross + " " + e.error.Error())
 }
 
 func (*Error) Init(base.Model) tea.Cmd {

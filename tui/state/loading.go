@@ -1,11 +1,13 @@
 package state
 
 import (
+	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type loadingKeyMap struct{}
@@ -52,7 +54,7 @@ func (l *Loading) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 }
 
 func (l *Loading) View(base.Model) string {
-	return l.spinner.View() + " " + l.message
+	return lipgloss.NewStyle().Foreground(color.Accent).Render(l.spinner.View()) + " " + l.message
 }
 
 func (l *Loading) Init(base.Model) tea.Cmd {

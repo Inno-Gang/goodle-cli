@@ -5,7 +5,7 @@ const Version = "0.0.1"
 
 const (
 	// Name is the name of the application
-	Name = "goodle"
+	Name = "goodle-cli"
 
 	// DescriptionShort short description of the app
 	DescriptionShort = Name + " description"

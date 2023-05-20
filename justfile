@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 go-mod := `go list`
-flags := '-ldflags="-s -w"'
+flags := '-trimpath -ldflags="-s -w"'
 
 # Build `goodle-cli`
 build:

@@ -147,7 +147,7 @@ var configSetCmd = &cobra.Command{
 
 		fmt.Printf(
 			"%s set %s to %s\n",
-			style.Success(icon.Check),
+			style.Success.Render(icon.Check),
 			lipgloss.NewStyle().Foreground(color.Purple).Render(key),
 			lipgloss.NewStyle().Foreground(color.Yellow).Render(fmt.Sprint(v)),
 		)
@@ -222,7 +222,7 @@ var configWriteCmd = &cobra.Command{
 			force          = lo.Must(cmd.Flags().GetBool("force"))
 			configFilePath = filepath.Join(
 				where.Config(),
-				fmt.Sprintf("%s.%s", app.Name, config.ConfigFormat),
+				fmt.Sprintf("%s.%s", app.Name, config.Format),
 			)
 		)
 
@@ -239,7 +239,7 @@ var configWriteCmd = &cobra.Command{
 		handleErr(viper.SafeWriteConfig())
 		fmt.Printf(
 			"%s wrote config to %s\n",
-			style.Success(icon.Check),
+			style.Success.Render(icon.Check),
 			configFilePath,
 		)
 	},
@@ -254,7 +254,7 @@ var configDeleteCmd = &cobra.Command{
 	Short:   "Delete the config file",
 	Aliases: []string{"remove"},
 	Run: func(cmd *cobra.Command, args []string) {
-		configFilePath := filepath.Join(where.Config(), fmt.Sprintf("%s.%s", app.Name, config.ConfigFormat))
+		configFilePath := filepath.Join(where.Config(), fmt.Sprintf("%s.%s", app.Name, config.Format))
 
 		exists, err := filesystem.Api().Exists(configFilePath)
 		handleErr(err)
@@ -262,7 +262,7 @@ var configDeleteCmd = &cobra.Command{
 		if !exists {
 			fmt.Printf(
 				"%s nothing to delete\n",
-				style.Success(icon.Check),
+				style.Success.Render(icon.Check),
 			)
 			return
 		}
@@ -272,7 +272,7 @@ var configDeleteCmd = &cobra.Command{
 		handleErr(err)
 		fmt.Printf(
 			"%s deleted config\n",
-			style.Success(icon.Check),
+			style.Success.Render(icon.Check),
 		)
 	},
 }

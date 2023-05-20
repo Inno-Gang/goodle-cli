@@ -8,6 +8,7 @@ import (
 )
 
 func (m *Model) Init() tea.Cmd {
+	// TODO: move it to a separate function or so
 	if login, ok := m.state.(*state.Login); ok {
 		email := viper.GetString(key.AuthEmail)
 		login.SetEmail(email)

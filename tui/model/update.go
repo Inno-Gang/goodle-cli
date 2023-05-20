@@ -23,12 +23,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keyMap.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, m.keyMap.Back):
-			m.back()
-			return m, nil
+			return m, m.back()
 		}
 	case base.MsgBack:
-		m.back()
-		return m, nil
+		return m, m.back()
 	case base.State:
 		return m, m.pushState(msg)
 	case error:

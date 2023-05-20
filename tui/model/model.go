@@ -83,10 +83,10 @@ func (m *Model) resize(size base.Size) {
 	m.state.Resize(m.StateSize())
 }
 
-func (m *Model) back() {
+func (m *Model) back() tea.Cmd {
 	// do not pop the last state
 	if m.history.Size() == 0 {
-		return
+		return nil
 	}
 
 	m.cancel()
@@ -94,6 +94,8 @@ func (m *Model) back() {
 
 	// update size for old models
 	m.state.Resize(m.StateSize())
+
+	return m.state.Init(m)
 }
 
 func (m *Model) pushState(state base.State) tea.Cmd {

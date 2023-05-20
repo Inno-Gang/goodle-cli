@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 	"github.com/inno-gang/goodle/auth"
 	"github.com/inno-gang/goodle/moodle"
 	"github.com/spf13/viper"
@@ -141,7 +142,10 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 					}
 
 					// TODO: log errors
-					_ = l.saveCredentials()
+					err = l.saveCredentials()
+					if err != nil {
+						log.Error("failed to login", "err", err.Error())
+					}
 
 					newState, err := NewCourses(m.Context(), client)
 					if err != nil {

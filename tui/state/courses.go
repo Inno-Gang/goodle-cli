@@ -2,6 +2,7 @@ package state
 
 import (
 	"context"
+	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
 	"github.com/charmbracelet/bubbles/help"
@@ -59,7 +60,15 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 		items[i] = coursesItem{course}
 	}
 
-	l := list.New(items, list.NewDefaultDelegate(), 0, 0)
+	delegate := list.NewDefaultDelegate()
+
+	delegate.Styles.SelectedTitle.Foreground(color.Accent)
+	delegate.Styles.SelectedDesc.Foreground(color.AccentDarken)
+
+	delegate.Styles.SelectedTitle.BorderLeftForeground(color.Accent)
+	delegate.Styles.SelectedDesc.BorderLeftForeground(color.Accent)
+
+	l := list.New(items, delegate, 0, 0)
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
