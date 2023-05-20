@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Help bar padding
 - Add `just run` command
 - Show correct version
+- Show status bar
 
 ## 0.1.0
 

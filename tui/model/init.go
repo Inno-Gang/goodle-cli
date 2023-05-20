@@ -19,7 +19,7 @@ func (m *Model) Init() tea.Cmd {
 		if email != "" && password != "" {
 			return tea.Sequence(
 				func() tea.Msg {
-					return state.NewLoading("Logging in...")
+					return state.NewLoading("Hacking the mainframe...")
 				},
 				func() tea.Msg {
 					client, err := login.Client(m)

@@ -9,7 +9,7 @@ import (
 func (m *Model) View() string {
 	const newline = "\n"
 
-	header := m.styles.TitleBar.Render(m.styles.Title.Render(m.state.Title()))
+	header := m.styles.TitleBar.Render(m.styles.Title.Render(m.state.Title()) + " " + m.state.Status())
 	view := wordwrap.String(m.state.View(m), m.size.Width)
 	keyMapHelp := m.styles.HelpBar.Render(m.help.View(m))
 

@@ -29,7 +29,7 @@ type Loading struct {
 func NewLoading(message string) *Loading {
 	return &Loading{
 		message: message,
-		spinner: spinner.New(spinner.WithSpinner(spinner.Dot)),
+		spinner: spinner.New(spinner.WithSpinner(spinner.Line)),
 		keyMap:  loadingKeyMap{},
 	}
 }
@@ -46,6 +46,10 @@ func (*Loading) Title() string {
 	return "Loading"
 }
 
+func (l *Loading) Status() string {
+	return lipgloss.NewStyle().Foreground(color.Accent).Render(l.spinner.View())
+}
+
 func (l *Loading) Resize(base.Size) {}
 
 func (l *Loading) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
@@ -54,7 +58,7 @@ func (l *Loading) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 }
 
 func (l *Loading) View(base.Model) string {
-	return lipgloss.NewStyle().Foreground(color.Accent).Render(l.spinner.View()) + " " + l.message
+	return l.message
 }
 
 func (l *Loading) Init(base.Model) tea.Cmd {

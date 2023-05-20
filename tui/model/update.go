@@ -6,6 +6,7 @@ import (
 	"github.com/Inno-Gang/goodle-cli/tui/state"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 	"github.com/pkg/errors"
 )
 
@@ -33,6 +34,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if errors.Is(msg, context.Canceled) {
 			return m, nil
 		}
+
+		log.Error(msg)
 
 		return m, m.pushState(state.NewError(msg))
 	}

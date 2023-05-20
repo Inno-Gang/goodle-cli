@@ -20,11 +20,6 @@ var fields = []*Field{
 Available options are: (from less to most verbose)
 fatal, error, warn, info, debug`,
 	},
-	{
-		key.LogsReportCaller,
-		false,
-		"Whether the logger should report the caller location.",
-	},
 	// END LOGS
 
 	// AUTH

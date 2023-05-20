@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 	"github.com/zyedidia/generic/stack"
 	"golang.org/x/term"
 	"os"
@@ -89,6 +90,8 @@ func (m *Model) back() tea.Cmd {
 		return nil
 	}
 
+	log.Info("going to the previous state", "state", m.history.Peek().Title())
+
 	m.cancel()
 	m.state = m.history.Pop()
 
@@ -99,6 +102,7 @@ func (m *Model) back() tea.Cmd {
 }
 
 func (m *Model) pushState(state base.State) tea.Cmd {
+	log.Info("new state", "state", state.Title())
 	if !m.state.Intermediate() {
 		m.history.Push(m.state)
 	}

@@ -2,7 +2,9 @@ package state
 
 import (
 	"context"
+	"fmt"
 	"github.com/Inno-Gang/goodle-cli/color"
+	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
 	"github.com/charmbracelet/bubbles/help"
@@ -72,6 +74,7 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 	l.SetShowHelp(false)
 	l.SetShowStatusBar(false)
 	l.SetShowTitle(false)
+	l.SetShowPagination(false)
 
 	l.KeyMap.Filter = tuiutil.Bind("filter", "ctrl+f")
 
@@ -95,6 +98,13 @@ func (c *Courses) KeyMap() help.KeyMap {
 
 func (c *Courses) Title() string {
 	return "Courses"
+}
+
+func (c *Courses) Status() string {
+	paginator := c.list.Paginator.View()
+	text := stringutil.Quantify(len(c.list.VisibleItems()), "course", "courses")
+
+	return fmt.Sprintf("%s %s", paginator, text)
 }
 
 func (c *Courses) Resize(size base.Size) {

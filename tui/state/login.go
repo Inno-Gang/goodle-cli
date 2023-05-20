@@ -1,7 +1,6 @@
 package state
 
 import (
-	"fmt"
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
@@ -42,13 +41,6 @@ func NewLogin() *Login {
 
 	username := textinput.New()
 	username.Placeholder = "Email"
-	username.Validate = func(s string) error {
-		if strings.Contains(s, " ") {
-			return fmt.Errorf("whitespaces is not permitted")
-		}
-
-		return nil
-	}
 
 	password := textinput.New()
 	password.EchoMode = textinput.EchoPassword
@@ -82,7 +74,7 @@ func (l *Login) textFields() []*textinput.Model {
 
 func (l *Login) credentials() auth.IuCredentials {
 	return auth.IuCredentials{
-		Email:    l.email.Value(),
+		Email:    strings.TrimSpace(l.email.Value()),
 		Password: l.password.Value(),
 	}
 }
@@ -116,6 +108,10 @@ func (*Login) Title() string {
 	return "Login"
 }
 
+func (l *Login) Status() string {
+	return ""
+}
+
 func (l *Login) KeyMap() help.KeyMap {
 	return l.keyMap
 }
@@ -133,7 +129,7 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 		case key.Matches(msg, l.keyMap.confirm):
 			return tea.Sequence(
 				func() tea.Msg {
-					return NewLoading("Launching nukes...")
+					return NewLoading("Hacking the mainframe...")
 				},
 				func() tea.Msg {
 					client, err := l.Client(m)

@@ -9,6 +9,7 @@ type State interface {
 	Intermediate() bool
 	KeyMap() help.KeyMap
 	Title() string
+	Status() string
 
 	Resize(size Size)
 
