@@ -1,7 +1,7 @@
 package app
 
 // Version is the version of the application
-const Version = "0.0.1"
+const Version = "0.1.1"
 
 const (
 	// Name is the name of the application

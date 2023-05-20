@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Use moodle colors
 - Help bar padding
 - Add `just run` command
+- Show correct version
 
 ## 0.1.0
 
