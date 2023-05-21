@@ -61,6 +61,10 @@ func (*Error) Status() string {
 	return ""
 }
 
+func (*Error) Backable() bool {
+	return true
+}
+
 func (e *Error) KeyMap() help.KeyMap {
 	return e.keyMap
 }

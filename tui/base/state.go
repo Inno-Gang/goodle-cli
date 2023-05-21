@@ -10,6 +10,7 @@ type State interface {
 	KeyMap() help.KeyMap
 	Title() string
 	Status() string
+	Backable() bool
 
 	Resize(size Size)
 

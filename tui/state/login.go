@@ -1,6 +1,7 @@
 package state
 
 import (
+	"github.com/Inno-Gang/goodle-cli/color"
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
@@ -8,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/inno-gang/goodle/auth"
 	"github.com/inno-gang/goodle/moodle"
@@ -34,6 +36,7 @@ type Login struct {
 	email, password textinput.Model
 	keyMap          loginKeyMap
 	authenticator   *auth.IuAuthenticator
+	loggedIn        bool
 }
 
 func NewLogin() *Login {
@@ -109,14 +112,28 @@ func (*Login) Title() string {
 }
 
 func (l *Login) Status() string {
+	for _, f := range l.textFields() {
+		if f.Err != nil {
+			return lipgloss.NewStyle().Foreground(color.Red).Render(f.Err.Error())
+		}
+	}
+
 	return ""
+}
+
+func (*Login) Backable() bool {
+	return true
 }
 
 func (l *Login) KeyMap() help.KeyMap {
 	return l.keyMap
 }
 
-func (*Login) Resize(base.Size) {}
+func (l *Login) Resize(size base.Size) {
+	for _, f := range l.textFields() {
+		f.Width = size.Width
+	}
+}
 
 func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
@@ -129,7 +146,7 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 		case key.Matches(msg, l.keyMap.confirm):
 			return tea.Sequence(
 				func() tea.Msg {
-					return NewLoading("Hacking the mainframe...")
+					return NewLoading("Logging in...")
 				},
 				func() tea.Msg {
 					client, err := l.Client(m)
@@ -137,7 +154,6 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 						return err
 					}
 
-					// TODO: log errors
 					err = l.saveCredentials()
 					if err != nil {
 						log.Error("failed to login", "err", err.Error())
@@ -182,6 +198,39 @@ func (l *Login) View(base.Model) string {
 	return l.email.View() + "\n\n" + l.password.View()
 }
 
-func (l *Login) Init(base.Model) tea.Cmd {
-	return l.email.Focus()
+func (l *Login) Init(model base.Model) tea.Cmd {
+	email := viper.GetString(configKey.AuthEmail)
+	l.SetEmail(email)
+
+	password := viper.GetString(configKey.AuthPassword)
+	l.SetPassword(password)
+
+	if !l.loggedIn && email != "" && password != "" {
+		l.loggedIn = true
+
+		return tea.Sequence(
+			func() tea.Msg {
+				return NewLoading("Welcome back, " + lipgloss.NewStyle().Italic(true).Render(email))
+			},
+			func() tea.Msg {
+				client, err := l.Client(model)
+				if err != nil {
+					return err
+				}
+
+				courses, err := NewCourses(model.Context(), client)
+				if err != nil {
+					return err
+				}
+
+				return courses
+			},
+		)
+	}
+
+	if !l.email.Focused() && !l.password.Focused() {
+		return l.email.Focus()
+	}
+
+	return nil
 }

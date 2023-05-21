@@ -23,10 +23,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keyMap.Quit):
 			return m, tea.Quit
-		case key.Matches(msg, m.keyMap.Back):
+		case key.Matches(msg, m.keyMap.Back) && m.state.Backable():
 			return m, m.back()
 		}
 	case base.MsgBack:
+		// this msg can override Backable() output
 		return m, m.back()
 	case base.State:
 		return m, m.pushState(msg)

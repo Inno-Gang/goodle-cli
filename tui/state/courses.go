@@ -76,7 +76,7 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 	l.SetShowTitle(false)
 	l.SetShowPagination(false)
 
-	l.KeyMap.Filter = tuiutil.Bind("filter", "ctrl+f")
+	l.KeyMap.CancelWhileFiltering = tuiutil.Bind("cancel", "esc")
 
 	return &Courses{
 		client: client,
@@ -100,9 +100,17 @@ func (c *Courses) Title() string {
 	return "Courses"
 }
 
+func (c *Courses) Backable() bool {
+	return c.list.FilterState() == list.Unfiltered
+}
+
 func (c *Courses) Status() string {
 	paginator := c.list.Paginator.View()
-	text := stringutil.Quantify(len(c.list.VisibleItems()), "course", "courses")
+	text := stringutil.Quantify(
+		len(c.list.VisibleItems()),
+		"course",
+		"courses",
+	)
 
 	return fmt.Sprintf("%s %s", paginator, text)
 }
@@ -116,11 +124,6 @@ func (c *Courses) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, c.keyMap.list.Filter):
-			if c.list.FilterState() != list.Unfiltered {
-				c.list.ResetFilter()
-				return nil
-			}
 		case !isFiltering && key.Matches(msg, c.keyMap.OpenBrowser):
 			item, ok := c.list.SelectedItem().(coursesItem)
 			if !ok {

@@ -81,6 +81,8 @@ func (m *Model) cancel() {
 
 func (m *Model) resize(size base.Size) {
 	m.size = size
+	m.help.Width = size.Width
+
 	m.state.Resize(m.StateSize())
 }
 

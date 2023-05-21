@@ -3,13 +3,13 @@
 go-mod := `go list`
 flags := '-trimpath -ldflags="-s -w"'
 
-# Build `goodle-cli`
-build:
-    go build {{flags}}
-
 # Run goodle
 run:
     go run .
+
+# Build `goodle-cli`
+build:
+    go build {{flags}}
 
 # Install `goodle-cli` to the GOBIN
 install:

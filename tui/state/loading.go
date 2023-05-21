@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"time"
 )
 
 type loadingKeyMap struct{}
@@ -29,8 +30,18 @@ type Loading struct {
 func NewLoading(message string) *Loading {
 	return &Loading{
 		message: message,
-		spinner: spinner.New(spinner.WithSpinner(spinner.Line)),
-		keyMap:  loadingKeyMap{},
+		spinner: spinner.New(spinner.WithSpinner(spinner.Spinner{
+			Frames: []string{
+				"Moodle",
+				"mOodle",
+				"moOdle",
+				"mooDle",
+				"moodLe",
+				"moodlE",
+			},
+			FPS: time.Second / 7,
+		})),
+		keyMap: loadingKeyMap{},
 	}
 }
 
@@ -48,6 +59,10 @@ func (*Loading) Title() string {
 
 func (l *Loading) Status() string {
 	return lipgloss.NewStyle().Foreground(color.Accent).Render(l.spinner.View())
+}
+
+func (*Loading) Backable() bool {
+	return true
 }
 
 func (l *Loading) Resize(base.Size) {}
