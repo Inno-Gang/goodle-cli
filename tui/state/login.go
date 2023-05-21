@@ -75,6 +75,28 @@ func (l *Login) textFields() []*textinput.Model {
 	}
 }
 
+func (l *Login) focusNext() tea.Cmd {
+	var cmds []tea.Cmd
+
+	fields := l.textFields()
+
+	for i, curr := range fields[:len(fields)-1] {
+		next := fields[i+1]
+
+		if next.Focused() {
+			curr = next
+			next = fields[0]
+		}
+
+		if curr.Focused() {
+			curr.Blur()
+			cmds = append(cmds, next.Focus())
+		}
+	}
+
+	return tea.Batch(cmds...)
+}
+
 func (l *Login) credentials() auth.IuCredentials {
 	return auth.IuCredentials{
 		Email:    strings.TrimSpace(l.email.Value()),
@@ -136,9 +158,6 @@ func (l *Login) Resize(size base.Size) {
 }
 
 func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
-	var cmds []tea.Cmd
-
-	fields := l.textFields()
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -167,25 +186,12 @@ func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
 					return newState
 				})
 		case key.Matches(msg, l.keyMap.focusNext):
-			for i, curr := range fields[:len(fields)-1] {
-				next := fields[i+1]
-
-				if next.Focused() {
-					curr = next
-					next = fields[0]
-				}
-
-				if curr.Focused() {
-					curr.Blur()
-					cmds = append(cmds, next.Focus())
-				}
-			}
-
-			return nil
+			return l.focusNext()
 		}
 	}
 
-	for _, f := range fields {
+	var cmds []tea.Cmd
+	for _, f := range l.textFields() {
 		var cmd tea.Cmd
 		*f, cmd = f.Update(msg)
 		cmds = append(cmds, cmd)
