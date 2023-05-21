@@ -10,3 +10,7 @@ const (
 	AuthEmail    = "auth.email"
 	AuthPassword = "auth.password"
 )
+
+const (
+	TUIShowSections = "tui.show_sections"
+)

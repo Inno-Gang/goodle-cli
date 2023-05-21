@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Inno-Gang/goodle-cli/color"
+	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
@@ -13,8 +14,49 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/inno-gang/goodle"
 	"github.com/inno-gang/goodle/moodle"
+	"github.com/inno-gang/goodle/richtext"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/spf13/viper"
 )
+
+type globalSection struct {
+	sections []goodle.Section
+	course   goodle.Course
+}
+
+func newGlobalSection(ctx context.Context, client *moodle.Client, course goodle.Course) (*globalSection, error) {
+	sections, err := client.GetCourseSections(ctx, course.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	return &globalSection{
+		sections: sections,
+		course:   course,
+	}, nil
+}
+
+func (g globalSection) Id() int {
+	return g.course.Id()
+}
+
+func (g globalSection) Title() string {
+	return g.course.Title()
+}
+
+func (g globalSection) Description() *richtext.RichText {
+	return g.course.Description()
+}
+
+func (g globalSection) Blocks() (blocks []goodle.Block) {
+	for _, section := range g.sections {
+		for _, block := range section.Blocks() {
+			blocks = append(blocks, block)
+		}
+	}
+
+	return blocks
+}
 
 type coursesItem struct {
 	goodle.Course
@@ -33,12 +75,12 @@ func (c coursesItem) Description() string {
 }
 
 type coursesKeyMap struct {
-	list        list.KeyMap
-	OpenBrowser key.Binding
+	list                 list.KeyMap
+	OpenBrowser, Confirm key.Binding
 }
 
 func (c coursesKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{c.OpenBrowser, c.list.Filter, c.list.CursorUp, c.list.CursorDown}
+	return []key.Binding{c.OpenBrowser, c.Confirm, c.list.Filter, c.list.CursorUp, c.list.CursorDown}
 }
 
 func (c coursesKeyMap) FullHelp() [][]key.Binding {
@@ -83,6 +125,7 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 		list:   l,
 		keyMap: coursesKeyMap{
 			OpenBrowser: tuiutil.Bind("open browser", "o"),
+			Confirm:     tuiutil.Bind("confirm", "enter"),
 			list:        l.KeyMap,
 		},
 	}, nil
@@ -119,7 +162,7 @@ func (c *Courses) Resize(size base.Size) {
 	c.list.SetSize(size.Width, size.Height)
 }
 
-func (c *Courses) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
+func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	isFiltering := c.list.FilterState() == list.Filtering
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -141,6 +184,34 @@ func (c *Courses) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 					}
 
 					return base.MsgBack{}
+				},
+			)
+		case !isFiltering && key.Matches(msg, c.keyMap.Confirm):
+			item, ok := c.list.SelectedItem().(coursesItem)
+			if !ok {
+				return nil
+			}
+
+			return tea.Sequence(
+				func() tea.Msg {
+					return NewLoading("Getting sections...")
+				},
+				func() tea.Msg {
+					if viper.GetBool(configKey.TUIShowSections) {
+						sections, err := NewSections(model.Context(), c.client, item.Course)
+						if err != nil {
+							return err
+						}
+
+						return sections
+					}
+
+					section, err := newGlobalSection(model.Context(), c.client, item.Course)
+					if err != nil {
+						return nil
+					}
+
+					return NewBlocks(section)
 				},
 			)
 		}

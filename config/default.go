@@ -39,6 +39,14 @@ fatal, error, warn, info, debug`,
 		"Remember password. Warning - passwords are stored in a plaintext",
 	},
 	// END AUTH
+
+	// TUI
+	{
+		key.TUIShowSections,
+		false,
+		"Show sections as a separate state",
+	},
+	// END TUI
 }
 
 func setDefaults() {
