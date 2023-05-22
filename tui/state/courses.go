@@ -7,7 +7,7 @@ import (
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
-	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
+	"github.com/Inno-Gang/goodle-cli/tui/util"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -118,14 +118,14 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 	l.SetShowTitle(false)
 	l.SetShowPagination(false)
 
-	l.KeyMap.CancelWhileFiltering = tuiutil.Bind("cancel", "esc")
+	l.KeyMap.CancelWhileFiltering = util.Bind("cancel", "esc")
 
 	return &Courses{
 		client: client,
 		list:   l,
 		keyMap: coursesKeyMap{
-			OpenBrowser: tuiutil.Bind("open browser", "o"),
-			Confirm:     tuiutil.Bind("confirm", "enter"),
+			OpenBrowser: util.Bind("open browser", "o"),
+			Confirm:     util.Bind("confirm", "enter"),
 			list:        l.KeyMap,
 		},
 	}, nil

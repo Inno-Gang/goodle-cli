@@ -6,7 +6,7 @@ import (
 	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
-	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
+	"github.com/Inno-Gang/goodle-cli/tui/util"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -88,13 +88,13 @@ func NewSections(
 	l.SetShowTitle(false)
 	l.SetShowPagination(false)
 
-	l.KeyMap.CancelWhileFiltering = tuiutil.Bind("cancel", "esc")
+	l.KeyMap.CancelWhileFiltering = util.Bind("cancel", "esc")
 
 	return &Sections{
 		course: course,
 		list:   l,
 		keyMap: sectionsKeyMap{
-			confirm: tuiutil.Bind("confirm", "enter"),
+			confirm: util.Bind("confirm", "enter"),
 			list:    l.KeyMap,
 		},
 	}, nil

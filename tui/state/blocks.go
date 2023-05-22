@@ -5,7 +5,7 @@ import (
 	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
-	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
+	"github.com/Inno-Gang/goodle-cli/tui/util"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -77,14 +77,14 @@ func NewBlocks(section goodle.Section) *Blocks {
 	l.SetShowTitle(false)
 	l.SetShowPagination(false)
 
-	l.KeyMap.CancelWhileFiltering = tuiutil.Bind("cancel", "esc")
+	l.KeyMap.CancelWhileFiltering = util.Bind("cancel", "esc")
 
 	return &Blocks{
 		section: section,
 		list:    l,
 		keyMap: blocksKeyMap{
-			openBrowser: tuiutil.Bind("open browser", "o"),
-			open:        tuiutil.Bind("open", "enter"),
+			openBrowser: util.Bind("open browser", "o"),
+			open:        util.Bind("open", "enter"),
 			list:        l.KeyMap,
 		},
 	}

@@ -4,7 +4,7 @@ import (
 	"github.com/Inno-Gang/goodle-cli/color"
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
-	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
+	"github.com/Inno-Gang/goodle-cli/tui/util"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -54,8 +54,8 @@ func NewLogin() *Login {
 		email:         username,
 		password:      password,
 		keyMap: loginKeyMap{
-			confirm:   tuiutil.Bind("confirm", "enter"),
-			focusNext: tuiutil.Bind("focus next", "tab"),
+			confirm:   util.Bind("confirm", "enter"),
+			focusNext: util.Bind("focus next", "tab"),
 		},
 	}
 }

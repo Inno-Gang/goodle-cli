@@ -7,7 +7,7 @@ import (
 	"github.com/Inno-Gang/goodle-cli/icon"
 	"github.com/Inno-Gang/goodle-cli/style"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
-	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
+	"github.com/Inno-Gang/goodle-cli/tui/util"
 	"github.com/Inno-Gang/goodle-cli/where"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -43,8 +43,8 @@ func NewError(err error) *Error {
 	return &Error{
 		error: err,
 		keyMap: errorKeyMap{
-			quit:      tuiutil.Bind("quit", "q"),
-			openIssue: tuiutil.Bind("open issue", "o"),
+			quit:      util.Bind("quit", "q"),
+			openIssue: util.Bind("open issue", "o"),
 		},
 	}
 }

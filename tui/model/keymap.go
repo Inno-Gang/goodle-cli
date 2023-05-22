@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/Inno-Gang/goodle-cli/tui/tuiutil"
+	"github.com/Inno-Gang/goodle-cli/tui/util"
 	"github.com/charmbracelet/bubbles/key"
 )
 
@@ -11,7 +11,7 @@ type keyMap struct {
 
 func newKeyMap() *keyMap {
 	return &keyMap{
-		Back: tuiutil.Bind("back", "esc"),
-		Quit: tuiutil.Bind("quit", "ctrl+c", "ctrl+d"),
+		Back: util.Bind("back", "esc"),
+		Quit: util.Bind("quit", "ctrl+c", "ctrl+d"),
 	}
 }
