@@ -2,6 +2,7 @@ package stringutil
 
 import (
 	"fmt"
+	"github.com/Inno-Gang/goodle-cli/icon"
 	"strings"
 )
 
@@ -22,4 +23,14 @@ func Quantify(number int, singular, plural string) string {
 	}
 
 	return fmt.Sprintf("%d %s", number, noun)
+}
+
+func Trim(s string, max int) string {
+	const ellipsis = icon.Ellipsis
+
+	if len(s)-len(ellipsis) >= max {
+		return s[:max-len(ellipsis)] + icon.Ellipsis
+	}
+
+	return s
 }

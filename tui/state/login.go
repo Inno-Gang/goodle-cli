@@ -158,7 +158,6 @@ func (l *Login) Resize(size base.Size) {
 }
 
 func (l *Login) Update(m base.Model, msg tea.Msg) tea.Cmd {
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
