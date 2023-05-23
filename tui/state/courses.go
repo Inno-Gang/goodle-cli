@@ -3,7 +3,9 @@ package state
 import (
 	"context"
 	"fmt"
+	"github.com/Inno-Gang/goodle-cli/cache"
 	"github.com/Inno-Gang/goodle-cli/color"
+	"github.com/Inno-Gang/goodle-cli/icon"
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
@@ -12,11 +14,18 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/inno-gang/goodle"
 	"github.com/inno-gang/goodle/moodle"
 	"github.com/inno-gang/goodle/richtext"
+	"github.com/samber/lo"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
+)
+
+var (
+	favoriteCourses = cache.New("favorite_courses")
+	hiddenCourses   = cache.New("hidden_courses")
 )
 
 type globalSection struct {
@@ -67,7 +76,27 @@ func (c coursesItem) FilterValue() string {
 }
 
 func (c coursesItem) Title() string {
-	return c.FilterValue()
+	title := c.FilterValue()
+
+	if c.IsFavorite() {
+		title += " " + lipgloss.NewStyle().Foreground(color.Yellow).Render(icon.Star)
+	}
+
+	return title
+}
+
+func (c coursesItem) IsFavorite() bool {
+	found, err := favoriteCourses.Get(fmt.Sprint(c.Course.Id()), &cache.Empty{})
+	return err == nil && found
+}
+
+func (c coursesItem) ToggleFavorite() error {
+	id := fmt.Sprint(c.Course.Id())
+	if c.IsFavorite() {
+		return favoriteCourses.Delete(id)
+	}
+
+	return favoriteCourses.Set(id, cache.Empty{})
 }
 
 func (c coursesItem) Description() string {
@@ -75,12 +104,25 @@ func (c coursesItem) Description() string {
 }
 
 type coursesKeyMap struct {
-	list                 list.KeyMap
-	OpenBrowser, Confirm key.Binding
+	list list.KeyMap
+	OpenBrowser,
+	Confirm,
+	ToggleHide,
+	ToggleShowHidden,
+	ToggleFavorite key.Binding
 }
 
 func (c coursesKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{c.OpenBrowser, c.Confirm, c.list.Filter, c.list.CursorUp, c.list.CursorDown}
+	return []key.Binding{
+		c.OpenBrowser,
+		c.Confirm,
+		c.ToggleFavorite,
+		c.ToggleHide,
+		c.ToggleShowHidden,
+		c.list.Filter,
+		c.list.CursorUp,
+		c.list.CursorDown,
+	}
 }
 
 func (c coursesKeyMap) FullHelp() [][]key.Binding {
@@ -88,9 +130,11 @@ func (c coursesKeyMap) FullHelp() [][]key.Binding {
 }
 
 type Courses struct {
-	client *moodle.Client
-	list   list.Model
-	keyMap coursesKeyMap
+	client     *moodle.Client
+	list       list.Model
+	courses    []goodle.Course
+	showHidden bool
+	keyMap     coursesKeyMap
 }
 
 func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
@@ -99,34 +143,27 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 		return nil, err
 	}
 
-	var items = make([]list.Item, len(courses))
-	for i, course := range courses {
-		items[i] = coursesItem{course}
-	}
+	// Filter out hidden courses
+	showable := lo.Filter(courses, func(course goodle.Course, _ int) bool {
+		found, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+		return found
+	})
 
-	delegate := list.NewDefaultDelegate()
-
-	delegate.Styles.SelectedTitle.Foreground(color.Accent)
-	delegate.Styles.SelectedDesc.Foreground(color.AccentDarken)
-
-	delegate.Styles.SelectedTitle.BorderLeftForeground(color.Accent)
-	delegate.Styles.SelectedDesc.BorderLeftForeground(color.Accent)
-
-	l := list.New(items, delegate, 0, 0)
-	l.SetShowHelp(false)
-	l.SetShowStatusBar(false)
-	l.SetShowTitle(false)
-	l.SetShowPagination(false)
-
-	l.KeyMap.CancelWhileFiltering = util.Bind("cancel", "esc")
+	l := util.NewList(showable, func(course goodle.Course) list.Item {
+		return coursesItem{course}
+	})
 
 	return &Courses{
-		client: client,
-		list:   l,
+		client:  client,
+		list:    l,
+		courses: courses,
 		keyMap: coursesKeyMap{
-			OpenBrowser: util.Bind("open browser", "o"),
-			Confirm:     util.Bind("confirm", "enter"),
-			list:        l.KeyMap,
+			OpenBrowser:      util.Bind("open browser", "o"),
+			Confirm:          util.Bind("confirm", "enter"),
+			ToggleFavorite:   util.Bind("toggle favorite", "f"),
+			ToggleHide:       util.Bind("hide", "backspace"),
+			ToggleShowHidden: util.Bind("show hidden", "H"),
+			list:             l.KeyMap,
 		},
 	}, nil
 }
@@ -140,6 +177,10 @@ func (c *Courses) KeyMap() help.KeyMap {
 }
 
 func (c *Courses) Title() string {
+	if c.showHidden {
+		return "Hidden Courses"
+	}
+
 	return "Courses"
 }
 
@@ -155,7 +196,12 @@ func (c *Courses) Status() string {
 		"courses",
 	)
 
-	return fmt.Sprintf("%s %s", paginator, text)
+	var filterValue string
+	if value := c.list.FilterValue(); value != "" {
+		filterValue = fmt.Sprintf(`"%s"`, value)
+	}
+
+	return fmt.Sprintf("%s %s %s", paginator, text, filterValue)
 }
 
 func (c *Courses) Resize(size base.Size) {
@@ -166,54 +212,124 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	isFiltering := c.list.FilterState() == list.Filtering
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch {
-		case !isFiltering && key.Matches(msg, c.keyMap.OpenBrowser):
-			item, ok := c.list.SelectedItem().(coursesItem)
-			if !ok {
-				return nil
-			}
+		if !isFiltering {
+			switch {
+			case key.Matches(msg, c.keyMap.ToggleShowHidden):
+				c.showHidden = !c.showHidden
 
-			return tea.Sequence(
-				func() tea.Msg {
-					return NewLoading("Opening...")
-				},
-				func() tea.Msg {
-					err := open.Start(item.Course.MoodleUrl())
-					if err != nil {
+				if c.showHidden {
+					c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "show")
+					c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show visible")
+				} else {
+					c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "hide")
+					c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show hidden")
+				}
+
+				var courses []list.Item
+				for _, course := range c.courses {
+					found, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+
+					show := (c.showHidden && !found) || (!c.showHidden && found)
+
+					if show {
+						courses = append(courses, coursesItem{course})
+					}
+				}
+
+				return c.list.SetItems(courses)
+			case key.Matches(msg, c.keyMap.ToggleHide):
+				item, ok := c.list.SelectedItem().(coursesItem)
+				if !ok {
+					return nil
+				}
+
+				id := fmt.Sprint(item.Course.Id())
+				found, _ := hiddenCourses.Get(id, &cache.Empty{})
+
+				var err error
+				if found {
+					err = hiddenCourses.Delete(id)
+				} else {
+					err = hiddenCourses.Set(id, cache.Empty{})
+				}
+
+				if err != nil {
+					return func() tea.Msg {
 						return err
 					}
+				}
 
-					return base.MsgBack{}
-				},
-			)
-		case !isFiltering && key.Matches(msg, c.keyMap.Confirm):
-			item, ok := c.list.SelectedItem().(coursesItem)
-			if !ok {
+				index := c.list.Index()
+				c.list.RemoveItem(index)
+
+				visibleItems := len(c.list.VisibleItems())
+				if visibleItems != 0 {
+					if index == visibleItems {
+						c.list.Select(index - 1)
+					}
+				} else {
+					c.list.Select(0)
+				}
+
 				return nil
-			}
+			case key.Matches(msg, c.keyMap.ToggleFavorite):
+				item, ok := c.list.SelectedItem().(coursesItem)
+				if !ok {
+					return nil
+				}
 
-			return tea.Sequence(
-				func() tea.Msg {
-					return NewLoading("Getting sections...")
-				},
-				func() tea.Msg {
-					if viper.GetBool(configKey.TUIShowSections) {
-						sections, err := NewSections(model.Context(), c.client, item.Course)
+				err := item.ToggleFavorite()
+				return func() tea.Msg {
+					return err
+				}
+			case key.Matches(msg, c.keyMap.OpenBrowser):
+				item, ok := c.list.SelectedItem().(coursesItem)
+				if !ok {
+					return nil
+				}
+
+				return tea.Sequence(
+					func() tea.Msg {
+						return NewLoading("Opening...")
+					},
+					func() tea.Msg {
+						err := open.Start(item.Course.MoodleUrl())
 						if err != nil {
 							return err
 						}
 
-						return sections
-					}
+						return base.MsgBack{}
+					},
+				)
+			case key.Matches(msg, c.keyMap.Confirm):
+				item, ok := c.list.SelectedItem().(coursesItem)
+				if !ok {
+					return nil
+				}
 
-					section, err := newGlobalSection(model.Context(), c.client, item.Course)
-					if err != nil {
-						return nil
-					}
+				return tea.Sequence(
+					func() tea.Msg {
+						return NewLoading("Getting sections...")
+					},
+					func() tea.Msg {
+						if viper.GetBool(configKey.TUIShowSections) {
+							sections, err := NewSections(model.Context(), c.client, item.Course)
+							if err != nil {
+								return err
+							}
 
-					return NewBlocks(section)
-				},
-			)
+							return sections
+						}
+
+						section, err := newGlobalSection(model.Context(), c.client, item.Course)
+						if err != nil {
+							return nil
+						}
+
+						return NewBlocks(section)
+					},
+				)
+			}
 		}
 	}
 

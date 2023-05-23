@@ -3,7 +3,6 @@ package state
 import (
 	"context"
 	"fmt"
-	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/util"
@@ -69,26 +68,9 @@ func NewSections(
 		return nil, err
 	}
 
-	var items = make([]list.Item, len(sections))
-	for i, section := range sections {
-		items[i] = sectionsItem{section}
-	}
-
-	delegate := list.NewDefaultDelegate()
-
-	delegate.Styles.SelectedTitle.Foreground(color.Accent)
-	delegate.Styles.SelectedDesc.Foreground(color.AccentDarken)
-
-	delegate.Styles.SelectedTitle.BorderLeftForeground(color.Accent)
-	delegate.Styles.SelectedDesc.BorderLeftForeground(color.Accent)
-
-	l := list.New(items, delegate, 0, 0)
-	l.SetShowHelp(false)
-	l.SetShowStatusBar(false)
-	l.SetShowTitle(false)
-	l.SetShowPagination(false)
-
-	l.KeyMap.CancelWhileFiltering = util.Bind("cancel", "esc")
+	l := util.NewList(sections, func(section goodle.Section) list.Item {
+		return sectionsItem{section}
+	})
 
 	return &Sections{
 		course: course,

@@ -2,7 +2,6 @@ package state
 
 import (
 	"fmt"
-	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/util"
@@ -58,26 +57,9 @@ type Blocks struct {
 func NewBlocks(section goodle.Section) *Blocks {
 	blocks := section.Blocks()
 
-	var items = make([]list.Item, len(blocks))
-	for i, block := range blocks {
-		items[i] = blocksItem{block}
-	}
-
-	delegate := list.NewDefaultDelegate()
-
-	delegate.Styles.SelectedTitle.Foreground(color.Accent)
-	delegate.Styles.SelectedDesc.Foreground(color.AccentDarken)
-
-	delegate.Styles.SelectedTitle.BorderLeftForeground(color.Accent)
-	delegate.Styles.SelectedDesc.BorderLeftForeground(color.Accent)
-
-	l := list.New(items, delegate, 0, 0)
-	l.SetShowHelp(false)
-	l.SetShowStatusBar(false)
-	l.SetShowTitle(false)
-	l.SetShowPagination(false)
-
-	l.KeyMap.CancelWhileFiltering = util.Bind("cancel", "esc")
+	l := util.NewList(blocks, func(block goodle.Block) list.Item {
+		return blocksItem{block}
+	})
 
 	return &Blocks{
 		section: section,
