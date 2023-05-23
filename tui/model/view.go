@@ -14,6 +14,7 @@ func (m *Model) View() string {
 
 	header := m.styles.TitleBar.Render(m.styles.Title.Render(title) + " " + m.state.Status())
 	view := wordwrap.String(m.state.View(m), m.size.Width)
+
 	keyMapHelp := m.styles.HelpBar.Render(m.help.View(m))
 
 	headerHeight := lipgloss.Height(header)

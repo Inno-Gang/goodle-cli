@@ -7,8 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 
 ## 0.2.0
 
-- Option to hide courses
-- Options to add courses to favorites
+- Show help menu by pressing `?`
+- Option to hide courses #2
+- Options to add courses to favorites #1
 - Show course section & blocks
 - Use `/` to filter, `esc` to cancel (instead of `ctrl+f`)
 - Use moodle colors

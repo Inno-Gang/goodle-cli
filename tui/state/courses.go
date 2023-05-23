@@ -114,11 +114,7 @@ type coursesKeyMap struct {
 
 func (c coursesKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
-		c.OpenBrowser,
 		c.Confirm,
-		c.ToggleFavorite,
-		c.ToggleHide,
-		c.ToggleShowHidden,
 		c.list.Filter,
 		c.list.CursorUp,
 		c.list.CursorDown,
@@ -126,7 +122,15 @@ func (c coursesKeyMap) ShortHelp() []key.Binding {
 }
 
 func (c coursesKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{c.ShortHelp()}
+	return [][]key.Binding{
+		c.ShortHelp(),
+		{
+			c.OpenBrowser,
+			c.ToggleHide,
+			c.ToggleFavorite,
+			c.ToggleShowHidden,
+		},
+	}
 }
 
 type Courses struct {
@@ -195,6 +199,10 @@ func (c *Courses) Status() string {
 		"course",
 		"courses",
 	)
+
+	if !c.showHidden {
+		text += fmt.Sprintf(" %d hidden", len(c.courses)-len(c.list.Items()))
+	}
 
 	var filterValue string
 	if value := c.list.FilterValue(); value != "" {
