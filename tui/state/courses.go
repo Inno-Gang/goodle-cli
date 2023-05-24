@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/Inno-Gang/goodle-cli/cache"
-	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/icon"
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
@@ -14,7 +13,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/inno-gang/goodle"
 	"github.com/inno-gang/goodle/moodle"
 	"github.com/inno-gang/goodle/richtext"
@@ -23,10 +21,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	favoriteCourses = cache.New("favorite_courses")
-	hiddenCourses   = cache.New("hidden_courses")
-)
+var hiddenCourses = cache.New("hidden_courses")
 
 type globalSection struct {
 	sections []goodle.Section
@@ -69,6 +64,8 @@ func (g globalSection) Blocks() (blocks []goodle.Block) {
 
 type coursesItem struct {
 	goodle.Course
+
+	model *Courses
 }
 
 func (c coursesItem) FilterValue() string {
@@ -77,30 +74,17 @@ func (c coursesItem) FilterValue() string {
 
 func (c coursesItem) Title() string {
 	title := c.FilterValue()
+	titleWidth := int(float32(c.model.size.Width) * 0.75)
 
-	if c.IsFavorite() {
-		title += " " + lipgloss.NewStyle().Foreground(color.Yellow).Render(icon.Star)
+	if viper.GetBool(configKey.TUIShowEmoji) {
+		return stringutil.Trim(title, titleWidth) + " " + stringutil.Correlate(title, icon.Emojis)
 	}
 
-	return title
-}
-
-func (c coursesItem) IsFavorite() bool {
-	found, err := favoriteCourses.Get(fmt.Sprint(c.Course.Id()), &cache.Empty{})
-	return err == nil && found
-}
-
-func (c coursesItem) ToggleFavorite() error {
-	id := fmt.Sprint(c.Course.Id())
-	if c.IsFavorite() {
-		return favoriteCourses.Delete(id)
-	}
-
-	return favoriteCourses.Set(id, cache.Empty{})
+	return stringutil.Trim(title, titleWidth)
 }
 
 func (c coursesItem) Description() string {
-	return c.Course.MoodleUrl()
+	return "Description\n" + c.Course.MoodleUrl()
 }
 
 type coursesKeyMap struct {
@@ -108,8 +92,7 @@ type coursesKeyMap struct {
 	OpenBrowser,
 	Confirm,
 	ToggleHide,
-	ToggleShowHidden,
-	ToggleFavorite key.Binding
+	ToggleShowHidden key.Binding
 }
 
 func (c coursesKeyMap) ShortHelp() []key.Binding {
@@ -127,13 +110,13 @@ func (c coursesKeyMap) FullHelp() [][]key.Binding {
 		{
 			c.OpenBrowser,
 			c.ToggleHide,
-			c.ToggleFavorite,
 			c.ToggleShowHidden,
 		},
 	}
 }
 
 type Courses struct {
+	size       base.Size
 	client     *moodle.Client
 	list       list.Model
 	courses    []goodle.Course
@@ -149,27 +132,28 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 
 	// Filter out hidden courses
 	showable := lo.Filter(courses, func(course goodle.Course, _ int) bool {
-		found, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
-		return found
+		isHidden, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+
+		return !isHidden
 	})
 
-	l := util.NewList(showable, func(course goodle.Course) list.Item {
-		return coursesItem{course}
-	})
-
-	return &Courses{
+	c := &Courses{
 		client:  client,
-		list:    l,
 		courses: courses,
 		keyMap: coursesKeyMap{
 			OpenBrowser:      util.Bind("open browser", "o"),
 			Confirm:          util.Bind("confirm", "enter"),
-			ToggleFavorite:   util.Bind("toggle favorite", "f"),
 			ToggleHide:       util.Bind("hide", "backspace"),
 			ToggleShowHidden: util.Bind("show hidden", "H"),
-			list:             l.KeyMap,
 		},
-	}, nil
+	}
+
+	c.list = util.NewList(showable, func(course goodle.Course) list.Item {
+		return coursesItem{course, c}
+	})
+	c.keyMap.list = c.list.KeyMap
+
+	return c, nil
 }
 
 func (c *Courses) Intermediate() bool {
@@ -213,6 +197,7 @@ func (c *Courses) Status() string {
 }
 
 func (c *Courses) Resize(size base.Size) {
+	c.size = size
 	c.list.SetSize(size.Width, size.Height)
 }
 
@@ -235,12 +220,12 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 
 				var courses []list.Item
 				for _, course := range c.courses {
-					found, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+					isHidden, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
 
-					show := (c.showHidden && !found) || (!c.showHidden && found)
+					show := (c.showHidden && isHidden) || (!c.showHidden && !isHidden)
 
 					if show {
-						courses = append(courses, coursesItem{course})
+						courses = append(courses, coursesItem{course, c})
 					}
 				}
 
@@ -280,16 +265,6 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 				}
 
 				return nil
-			case key.Matches(msg, c.keyMap.ToggleFavorite):
-				item, ok := c.list.SelectedItem().(coursesItem)
-				if !ok {
-					return nil
-				}
-
-				err := item.ToggleFavorite()
-				return func() tea.Msg {
-					return err
-				}
 			case key.Matches(msg, c.keyMap.OpenBrowser):
 				item, ok := c.list.SelectedItem().(coursesItem)
 				if !ok {

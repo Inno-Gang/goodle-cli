@@ -46,6 +46,11 @@ fatal, error, warn, info, debug`,
 		false,
 		"Show sections as a separate state",
 	},
+	{
+		key.TUIShowEmoji,
+		true,
+		"Show unique emoji for each course to find courses quicker",
+	},
 	// END TUI
 }
 

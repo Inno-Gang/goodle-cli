@@ -13,4 +13,5 @@ const (
 
 const (
 	TUIShowSections = "tui.show_sections"
+	TUIShowEmoji    = "tui.show_emoji"
 )
