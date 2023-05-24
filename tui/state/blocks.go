@@ -11,9 +11,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/dustin/go-humanize"
 	"github.com/inno-gang/goodle"
+	"github.com/samber/lo"
 	"github.com/skratchdot/open-golang/open"
 	"strings"
 )
+
+const moodleFormat = "Monday, 02 Jan 2006, 15:04"
 
 type blocksItem struct {
 	goodle.Block
@@ -38,26 +41,28 @@ func (b blocksItem) Description() string {
 		info.WriteString(humanize.Bytes(uint64(blockFile.SizeBytes())))
 		info.WriteRune(whitespace)
 		info.WriteString(blockFile.MimeType())
-		info.WriteRune(whitespace)
-		info.WriteString("created")
-		info.WriteRune(whitespace)
-		info.WriteString(humanize.Time(blockFile.CreatedAt()))
 	case goodle.BlockTypeAssignment:
 		blockAssignment := b.Block.(goodle.BlockAssignment)
 
+		deadline := blockAssignment.DeadlineAt()
+
 		info.WriteString("Deadline")
 		info.WriteRune(whitespace)
-		info.WriteString(humanize.Time(blockAssignment.DeadlineAt()))
+		info.WriteString(lo.If(deadline.IsZero(), "unknown").Else(deadline.Format(moodleFormat)))
 	case goodle.BlockTypeQuiz:
 		blockQuiz := b.Block.(goodle.BlockQuiz)
 
+		opens := blockQuiz.OpensAt()
+		closes := blockQuiz.ClosesAt()
+
 		info.WriteString("Opens")
 		info.WriteRune(whitespace)
-		info.WriteString(humanize.Time(blockQuiz.OpensAt()))
+		info.WriteString(lo.If(opens.IsZero(), "unknown").Else(opens.Format(moodleFormat)))
+		info.WriteRune(',')
 		info.WriteRune(whitespace)
 		info.WriteString("closes")
 		info.WriteRune(whitespace)
-		info.WriteString(humanize.Time(blockQuiz.ClosesAt()))
+		info.WriteString(lo.If(closes.IsZero(), "unknown").Else(closes.Format(moodleFormat)))
 	case goodle.BlockTypeLink:
 		blockLink := b.Block.(goodle.BlockLink)
 
