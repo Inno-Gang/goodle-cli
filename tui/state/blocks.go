@@ -9,8 +9,10 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/dustin/go-humanize"
 	"github.com/inno-gang/goodle"
 	"github.com/skratchdot/open-golang/open"
+	"strings"
 )
 
 type blocksItem struct {
@@ -26,7 +28,45 @@ func (b blocksItem) Title() string {
 }
 
 func (b blocksItem) Description() string {
-	return b.Block.Type().Name()
+	const whitespace = ' '
+	var info strings.Builder
+
+	switch b.Type() {
+	case goodle.BlockTypeFile:
+		blockFile := b.Block.(goodle.BlockFile)
+
+		info.WriteString(humanize.Bytes(uint64(blockFile.SizeBytes())))
+		info.WriteRune(whitespace)
+		info.WriteString(blockFile.MimeType())
+		info.WriteRune(whitespace)
+		info.WriteString("created")
+		info.WriteRune(whitespace)
+		info.WriteString(humanize.Time(blockFile.CreatedAt()))
+	case goodle.BlockTypeAssignment:
+		blockAssignment := b.Block.(goodle.BlockAssignment)
+
+		info.WriteString("Deadline")
+		info.WriteRune(whitespace)
+		info.WriteString(humanize.Time(blockAssignment.DeadlineAt()))
+	case goodle.BlockTypeQuiz:
+		blockQuiz := b.Block.(goodle.BlockQuiz)
+
+		info.WriteString("Opens")
+		info.WriteRune(whitespace)
+		info.WriteString(humanize.Time(blockQuiz.OpensAt()))
+		info.WriteRune(whitespace)
+		info.WriteString("closes")
+		info.WriteRune(whitespace)
+		info.WriteString(humanize.Time(blockQuiz.ClosesAt()))
+	case goodle.BlockTypeLink:
+		blockLink := b.Block.(goodle.BlockLink)
+
+		info.WriteString(blockLink.Url())
+	default:
+		info.WriteString("No information")
+	}
+
+	return info.String() + "\n" + b.Block.Type().Name()
 }
 
 type blocksKeyMap struct {
@@ -51,6 +91,7 @@ func (b blocksKeyMap) FullHelp() [][]key.Binding {
 type Blocks struct {
 	section goodle.Section
 	list    list.Model
+	size    base.Size
 	keyMap  blocksKeyMap
 }
 
@@ -62,8 +103,8 @@ func NewBlocks(section goodle.Section) *Blocks {
 	})
 
 	return &Blocks{
-		section: section,
 		list:    l,
+		section: section,
 		keyMap: blocksKeyMap{
 			openBrowser: util.Bind("open browser", "o"),
 			open:        util.Bind("open", "enter"),
