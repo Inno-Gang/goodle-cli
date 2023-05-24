@@ -8,8 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 ## 0.2.0
 
 - Show help menu by pressing `?`
+- Options to add unique emoji for each course to remember & find needed courses quicker
 - Option to hide courses #2
-- Options to add courses to favorites #1
 - Show course section & blocks
 - Use `/` to filter, `esc` to cancel (instead of `ctrl+f`)
 - Use moodle colors
