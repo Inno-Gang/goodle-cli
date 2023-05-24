@@ -205,117 +205,120 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	isFiltering := c.list.FilterState() == list.Filtering
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if !isFiltering {
-			switch {
-			case key.Matches(msg, c.keyMap.ToggleShowHidden):
-				c.showHidden = !c.showHidden
+		if isFiltering {
+			goto end
+		}
 
-				if c.showHidden {
-					c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "show")
-					c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show visible")
-				} else {
-					c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "hide")
-					c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show hidden")
+		switch {
+		case key.Matches(msg, c.keyMap.ToggleShowHidden):
+			c.showHidden = !c.showHidden
+
+			if c.showHidden {
+				c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "show")
+				c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show visible")
+			} else {
+				c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "hide")
+				c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show hidden")
+			}
+
+			var courses []list.Item
+			for _, course := range c.courses {
+				isHidden, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+
+				show := (c.showHidden && isHidden) || (!c.showHidden && !isHidden)
+
+				if show {
+					courses = append(courses, coursesItem{course, c})
 				}
+			}
 
-				var courses []list.Item
-				for _, course := range c.courses {
-					isHidden, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+			return c.list.SetItems(courses)
+		case key.Matches(msg, c.keyMap.ToggleHide):
+			item, ok := c.list.SelectedItem().(coursesItem)
+			if !ok {
+				return nil
+			}
 
-					show := (c.showHidden && isHidden) || (!c.showHidden && !isHidden)
+			id := fmt.Sprint(item.Course.Id())
+			found, _ := hiddenCourses.Get(id, &cache.Empty{})
 
-					if show {
-						courses = append(courses, coursesItem{course, c})
-					}
+			var err error
+			if found {
+				err = hiddenCourses.Delete(id)
+			} else {
+				err = hiddenCourses.Set(id, cache.Empty{})
+			}
+
+			if err != nil {
+				return func() tea.Msg {
+					return err
 				}
+			}
 
-				return c.list.SetItems(courses)
-			case key.Matches(msg, c.keyMap.ToggleHide):
-				item, ok := c.list.SelectedItem().(coursesItem)
-				if !ok {
-					return nil
+			index := c.list.Index()
+			c.list.RemoveItem(index)
+
+			visibleItems := len(c.list.VisibleItems())
+			if visibleItems != 0 {
+				if index == visibleItems {
+					c.list.Select(index - 1)
 				}
+			} else {
+				c.list.Select(0)
+			}
 
-				id := fmt.Sprint(item.Course.Id())
-				found, _ := hiddenCourses.Get(id, &cache.Empty{})
+			return nil
+		case key.Matches(msg, c.keyMap.OpenBrowser):
+			item, ok := c.list.SelectedItem().(coursesItem)
+			if !ok {
+				return nil
+			}
 
-				var err error
-				if found {
-					err = hiddenCourses.Delete(id)
-				} else {
-					err = hiddenCourses.Set(id, cache.Empty{})
-				}
-
-				if err != nil {
-					return func() tea.Msg {
+			return tea.Sequence(
+				func() tea.Msg {
+					return NewLoading("Opening...")
+				},
+				func() tea.Msg {
+					err := open.Start(item.Course.MoodleUrl())
+					if err != nil {
 						return err
 					}
-				}
 
-				index := c.list.Index()
-				c.list.RemoveItem(index)
-
-				visibleItems := len(c.list.VisibleItems())
-				if visibleItems != 0 {
-					if index == visibleItems {
-						c.list.Select(index - 1)
-					}
-				} else {
-					c.list.Select(0)
-				}
-
+					return base.MsgBack{}
+				},
+			)
+		case key.Matches(msg, c.keyMap.Confirm):
+			item, ok := c.list.SelectedItem().(coursesItem)
+			if !ok {
 				return nil
-			case key.Matches(msg, c.keyMap.OpenBrowser):
-				item, ok := c.list.SelectedItem().(coursesItem)
-				if !ok {
-					return nil
-				}
+			}
 
-				return tea.Sequence(
-					func() tea.Msg {
-						return NewLoading("Opening...")
-					},
-					func() tea.Msg {
-						err := open.Start(item.Course.MoodleUrl())
+			return tea.Sequence(
+				func() tea.Msg {
+					return NewLoading("Getting sections...")
+				},
+				func() tea.Msg {
+					if viper.GetBool(configKey.TUIShowSections) {
+						sections, err := NewSections(model.Context(), c.client, item.Course)
 						if err != nil {
 							return err
 						}
 
-						return base.MsgBack{}
-					},
-				)
-			case key.Matches(msg, c.keyMap.Confirm):
-				item, ok := c.list.SelectedItem().(coursesItem)
-				if !ok {
-					return nil
-				}
+						return sections
+					}
 
-				return tea.Sequence(
-					func() tea.Msg {
-						return NewLoading("Getting sections...")
-					},
-					func() tea.Msg {
-						if viper.GetBool(configKey.TUIShowSections) {
-							sections, err := NewSections(model.Context(), c.client, item.Course)
-							if err != nil {
-								return err
-							}
+					section, err := newGlobalSection(model.Context(), c.client, item.Course)
+					if err != nil {
+						return nil
+					}
 
-							return sections
-						}
-
-						section, err := newGlobalSection(model.Context(), c.client, item.Course)
-						if err != nil {
-							return nil
-						}
-
-						return NewBlocks(section)
-					},
-				)
-			}
+					return NewBlocks(section)
+				},
+			)
 		}
 	}
 
+end:
 	c.list, cmd = c.list.Update(msg)
 	return cmd
 }

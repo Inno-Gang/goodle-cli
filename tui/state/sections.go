@@ -117,8 +117,12 @@ func (s *Sections) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	isFiltering := s.list.FilterState() == list.Filtering
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if isFiltering {
+			goto end
+		}
+
 		switch {
-		case !isFiltering && key.Matches(msg, s.keyMap.confirm):
+		case key.Matches(msg, s.keyMap.confirm):
 			item, ok := s.list.SelectedItem().(sectionsItem)
 			if !ok {
 				return nil
@@ -129,6 +133,8 @@ func (s *Sections) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 			}
 		}
 	}
+
+end:
 	s.list, cmd = s.list.Update(msg)
 	return cmd
 }

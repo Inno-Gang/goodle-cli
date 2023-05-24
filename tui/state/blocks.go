@@ -222,13 +222,19 @@ func (b *Blocks) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	isFiltering := b.list.FilterState() == list.Filtering
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if isFiltering {
+			goto end
+		}
+
 		switch {
-		case !isFiltering && key.Matches(msg, b.keyMap.openBrowser):
+		case key.Matches(msg, b.keyMap.openBrowser):
 			return b.openSelectedInBrowser()
-		case !isFiltering && key.Matches(msg, b.keyMap.open):
+		case key.Matches(msg, b.keyMap.open):
 			return b.openSelected()
 		}
 	}
+
+end:
 	b.list, cmd = b.list.Update(msg)
 	return cmd
 }
