@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/Inno-Gang/goodle-cli/tui/base"
 	"github.com/Inno-Gang/goodle-cli/tui/util"
@@ -13,6 +14,7 @@ import (
 	"github.com/inno-gang/goodle"
 	"github.com/samber/lo"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/spf13/viper"
 	"strings"
 )
 
@@ -27,7 +29,27 @@ func (b blocksItem) FilterValue() string {
 }
 
 func (b blocksItem) Title() string {
-	return b.FilterValue()
+	title := b.FilterValue()
+
+	if !viper.GetBool(configKey.TUIShowEmoji) || b.Type() == goodle.BlockTypeUnknown {
+		return title
+	}
+
+	var emoji string
+	switch b.Type() {
+	case goodle.BlockTypeQuiz:
+		emoji = "📊"
+	case goodle.BlockTypeLink:
+		emoji = "🖇️"
+	case goodle.BlockTypeFile:
+		emoji = "📃"
+	case goodle.BlockTypeFolder:
+		emoji = "📁"
+	case goodle.BlockTypeAssignment:
+		emoji = "📥"
+	}
+
+	return title + " " + emoji
 }
 
 func (b blocksItem) Description() string {
@@ -38,9 +60,19 @@ func (b blocksItem) Description() string {
 	case goodle.BlockTypeFile:
 		blockFile := b.Block.(goodle.BlockFile)
 
+		mimeType := blockFile.MimeType()
+		parts := strings.Split(mimeType, "/")
+
+		var subtype string
+		if len(parts) == 2 {
+			subtype = parts[1]
+		} else {
+			subtype = mimeType
+		}
+
 		info.WriteString(humanize.Bytes(uint64(blockFile.SizeBytes())))
 		info.WriteRune(whitespace)
-		info.WriteString(blockFile.MimeType())
+		info.WriteString(subtype)
 	case goodle.BlockTypeAssignment:
 		blockAssignment := b.Block.(goodle.BlockAssignment)
 
