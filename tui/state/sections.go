@@ -68,7 +68,7 @@ func NewSections(
 		return nil, err
 	}
 
-	l := util.NewList(sections, func(section goodle.Section) list.Item {
+	l := util.NewList(2, sections, func(section goodle.Section) list.Item {
 		return sectionsItem{section}
 	})
 

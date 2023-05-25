@@ -148,7 +148,7 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 		},
 	}
 
-	c.list = util.NewList(showable, func(course goodle.Course) list.Item {
+	c.list = util.NewList(3, showable, func(course goodle.Course) list.Item {
 		return coursesItem{course, c}
 	})
 	c.keyMap.list = c.list.KeyMap

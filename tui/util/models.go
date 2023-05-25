@@ -6,7 +6,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func NewList[T any](items []T, transform func(T) list.Item) list.Model {
+func NewList[T any](
+	delegateHeight int,
+	items []T,
+	transform func(T) list.Item,
+) list.Model {
 	var listItems = make([]list.Item, len(items))
 	for i, item := range items {
 		listItems[i] = transform(item)
@@ -25,7 +29,7 @@ func NewList[T any](items []T, transform func(T) list.Item) list.Model {
 
 	delegate.Styles.SelectedTitle.BorderLeftForeground(color.Accent)
 	delegate.Styles.SelectedDesc.BorderLeftForeground(color.Accent)
-	delegate.SetHeight(3)
+	delegate.SetHeight(delegateHeight)
 
 	l := list.New(listItems, delegate, 0, 0)
 	l.SetShowHelp(false)

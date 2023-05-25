@@ -103,7 +103,7 @@ type Blocks struct {
 func NewBlocks(section goodle.Section) *Blocks {
 	blocks := section.Blocks()
 
-	l := util.NewList(blocks, func(block goodle.Block) list.Item {
+	l := util.NewList(3, blocks, func(block goodle.Block) list.Item {
 		return blocksItem{block}
 	})
 
