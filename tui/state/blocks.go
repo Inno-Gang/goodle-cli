@@ -187,7 +187,19 @@ func (b *Blocks) Resize(size base.Size) {
 }
 
 func (b *Blocks) openSelected() tea.Cmd {
-	return b.openSelectedInBrowser()
+	item, ok := b.list.SelectedItem().(blocksItem)
+	if !ok {
+		return nil
+	}
+
+	switch item.Type() {
+	case goodle.BlockTypeLink:
+		block := item.Block.(goodle.BlockLink)
+
+		return openWithDefaultApp(block.Url())
+	default:
+		return openWithDefaultApp(item.MoodleUrl())
+	}
 
 	// TODO: waiting for moodle api library update
 
@@ -239,18 +251,13 @@ func (b *Blocks) openSelected() tea.Cmd {
 	//}
 }
 
-func (b *Blocks) openSelectedInBrowser() tea.Cmd {
-	item, ok := b.list.SelectedItem().(blocksItem)
-	if !ok {
-		return nil
-	}
-
+func openWithDefaultApp(input string) tea.Cmd {
 	return tea.Sequence(
 		func() tea.Msg {
 			return NewLoading("opening...")
 		},
 		func() tea.Msg {
-			err := open.Run(item.MoodleUrl())
+			err := open.Run(input)
 			if err != nil {
 				return nil
 			}
@@ -270,7 +277,12 @@ func (b *Blocks) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, b.keyMap.openBrowser):
-			return b.openSelectedInBrowser()
+			item, ok := b.list.SelectedItem().(blocksItem)
+			if !ok {
+				return nil
+			}
+
+			return openWithDefaultApp(item.MoodleUrl())
 		case key.Matches(msg, b.keyMap.open):
 			return b.openSelected()
 		}
