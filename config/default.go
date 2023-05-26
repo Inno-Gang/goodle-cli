@@ -51,6 +51,11 @@ fatal, error, warn, info, debug`,
 		true,
 		"Show unique emoji for each course to find courses quicker",
 	},
+	{
+		key.TUIReverseBlocks,
+		false,
+		"Reverse blocks order",
+	},
 	// END TUI
 }
 

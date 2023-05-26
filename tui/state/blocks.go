@@ -112,8 +112,11 @@ func (b blocksItem) Description() string {
 }
 
 type blocksKeyMap struct {
-	openBrowser, open key.Binding
-	list              list.KeyMap
+	openBrowser,
+	open,
+	reverseItemsOrder key.Binding
+
+	list list.KeyMap
 }
 
 func (b blocksKeyMap) ShortHelp() []key.Binding {
@@ -127,7 +130,10 @@ func (b blocksKeyMap) ShortHelp() []key.Binding {
 }
 
 func (b blocksKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{b.ShortHelp()}
+	return [][]key.Binding{
+		b.ShortHelp(),
+		{b.reverseItemsOrder},
+	}
 }
 
 type Blocks struct {
@@ -148,9 +154,10 @@ func NewBlocks(section goodle.Section) *Blocks {
 		list:    l,
 		section: section,
 		keyMap: blocksKeyMap{
-			openBrowser: util.Bind("open browser", "o"),
-			open:        util.Bind("open", "enter"),
-			list:        l.KeyMap,
+			openBrowser:       util.Bind("open browser", "o"),
+			open:              util.Bind("open", "enter"),
+			reverseItemsOrder: util.Bind("reverse items", "r"),
+			list:              l.KeyMap,
 		},
 	}
 }
@@ -285,6 +292,8 @@ func (b *Blocks) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
 			return openWithDefaultApp(item.MoodleUrl())
 		case key.Matches(msg, b.keyMap.open):
 			return b.openSelected()
+		case key.Matches(msg, b.keyMap.reverseItemsOrder):
+			return b.list.SetItems(lo.Reverse(b.list.Items()))
 		}
 	}
 
@@ -298,5 +307,9 @@ func (b *Blocks) View(base.Model) string {
 }
 
 func (b *Blocks) Init(base.Model) tea.Cmd {
+	if viper.GetBool(configKey.TUIReverseBlocks) {
+		return b.list.SetItems(lo.Reverse(b.list.Items()))
+	}
+
 	return nil
 }

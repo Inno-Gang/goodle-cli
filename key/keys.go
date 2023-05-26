@@ -12,6 +12,7 @@ const (
 )
 
 const (
-	TUIShowSections = "tui.show_sections"
-	TUIShowEmoji    = "tui.show_emoji"
+	TUIShowSections  = "tui.show_sections"
+	TUIShowEmoji     = "tui.show_emoji"
+	TUIReverseBlocks = "tui.reverse_blocks"
 )
