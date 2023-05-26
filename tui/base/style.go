@@ -6,9 +6,9 @@ import (
 )
 
 type Styles struct {
-	Title    lipgloss.Style
-	TitleBar lipgloss.Style
-	HelpBar  lipgloss.Style
+	Title,
+	TitleBar,
+	HelpBar lipgloss.Style
 }
 
 func DefaultStyles() Styles {

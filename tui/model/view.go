@@ -10,9 +10,20 @@ import (
 func (m *Model) View() string {
 	const newline = "\n"
 
-	title := stringutil.Trim(m.state.Title(), m.size.Width/2)
+	title := m.state.Title()
+	titleStyle := m.styles.Title.Copy()
 
-	header := m.styles.TitleBar.Render(m.styles.Title.Render(title) + " " + m.state.Status())
+	if title.Background != "" {
+		titleStyle.Background(title.Background)
+	}
+
+	if title.Foreground != "" {
+		titleStyle.Foreground(title.Foreground)
+	}
+
+	titleText := stringutil.Trim(title.Text, m.size.Width/2)
+
+	header := m.styles.TitleBar.Render(titleStyle.Render(titleText) + " " + m.state.Status())
 	view := wordwrap.String(m.state.View(m), m.size.Width)
 
 	keyMapHelp := m.styles.HelpBar.Render(m.help.View(m))

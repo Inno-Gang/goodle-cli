@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Inno-Gang/goodle-cli/cache"
+	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/icon"
 	configKey "github.com/Inno-Gang/goodle-cli/key"
 	"github.com/Inno-Gang/goodle-cli/stringutil"
@@ -164,12 +165,12 @@ func (c *Courses) KeyMap() help.KeyMap {
 	return c.keyMap
 }
 
-func (c *Courses) Title() string {
+func (c *Courses) Title() base.Title {
 	if c.showHidden {
-		return "Hidden Courses"
+		return base.Title{Text: "Hidden Courses", Background: color.Yellow}
 	}
 
-	return "Courses"
+	return base.Title{Text: "Courses"}
 }
 
 func (c *Courses) Backable() bool {

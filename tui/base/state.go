@@ -8,7 +8,7 @@ import (
 type State interface {
 	Intermediate() bool
 	KeyMap() help.KeyMap
-	Title() string
+	Title() Title
 	Status() string
 	Backable() bool
 

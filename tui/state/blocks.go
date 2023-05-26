@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/dustin/go-humanize"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/inno-gang/goodle"
 	"github.com/samber/lo"
 	"github.com/skratchdot/open-golang/open"
@@ -60,19 +61,23 @@ func (b blocksItem) Description() string {
 	case goodle.BlockTypeFile:
 		blockFile := b.Block.(goodle.BlockFile)
 
-		mimeType := blockFile.MimeType()
-		parts := strings.Split(mimeType, "/")
+		var fileType string
 
-		var subtype string
-		if len(parts) == 2 {
-			subtype = parts[1]
+		if mime := mimetype.Lookup(blockFile.MimeType()); mime != nil {
+			extension := mime.Extension()
+
+			if extension != "" {
+				fileType = strings.TrimPrefix(extension, ".")
+			} else {
+				fileType = mime.String()
+			}
 		} else {
-			subtype = mimeType
+			fileType = blockFile.MimeType()
 		}
 
 		info.WriteString(humanize.Bytes(uint64(blockFile.SizeBytes())))
 		info.WriteRune(whitespace)
-		info.WriteString(subtype)
+		info.WriteString(fileType)
 	case goodle.BlockTypeAssignment:
 		blockAssignment := b.Block.(goodle.BlockAssignment)
 
@@ -158,8 +163,8 @@ func (b *Blocks) KeyMap() help.KeyMap {
 	return b.keyMap
 }
 
-func (b *Blocks) Title() string {
-	return b.section.Title()
+func (b *Blocks) Title() base.Title {
+	return base.Title{Text: b.section.Title()}
 }
 
 func (b *Blocks) Status() string {

@@ -53,8 +53,11 @@ func (l *Loading) KeyMap() help.KeyMap {
 	return l.keyMap
 }
 
-func (*Loading) Title() string {
-	return "Loading"
+func (*Loading) Title() base.Title {
+	return base.Title{
+		Text:       "Loading",
+		Background: color.Yellow,
+	}
 }
 
 func (l *Loading) Status() string {

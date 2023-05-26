@@ -101,7 +101,7 @@ func (m *Model) back() tea.Cmd {
 		return nil
 	}
 
-	log.Info("going to the previous state", "state", m.history.Peek().Title())
+	log.Info("going to the previous state", "state", m.history.Peek().Title().Text)
 
 	m.cancel()
 	m.state = m.history.Pop()
@@ -113,7 +113,7 @@ func (m *Model) back() tea.Cmd {
 }
 
 func (m *Model) pushState(state base.State) tea.Cmd {
-	log.Info("new state", "state", state.Title())
+	log.Info("new state", "state", state.Title().Text)
 	if !m.state.Intermediate() {
 		m.history.Push(m.state)
 	}

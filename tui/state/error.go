@@ -3,6 +3,7 @@ package state
 import (
 	"fmt"
 	"github.com/Inno-Gang/goodle-cli/app"
+	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/filesystem"
 	"github.com/Inno-Gang/goodle-cli/icon"
 	"github.com/Inno-Gang/goodle-cli/style"
@@ -53,8 +54,8 @@ func (*Error) Intermediate() bool {
 	return true
 }
 
-func (*Error) Title() string {
-	return "Error"
+func (*Error) Title() base.Title {
+	return base.Title{Text: "Error", Background: color.Red}
 }
 
 func (*Error) Status() string {

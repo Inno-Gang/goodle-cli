@@ -129,8 +129,8 @@ func (*Login) Intermediate() bool {
 	return false
 }
 
-func (*Login) Title() string {
-	return "Login"
+func (*Login) Title() base.Title {
+	return base.Title{Text: "Login"}
 }
 
 func (l *Login) Status() string {

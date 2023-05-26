@@ -90,8 +90,8 @@ func (s *Sections) KeyMap() help.KeyMap {
 	return s.keyMap
 }
 
-func (s *Sections) Title() string {
-	return s.course.Title()
+func (s *Sections) Title() base.Title {
+	return base.Title{Text: s.course.Title()}
 }
 
 func (s *Sections) Status() string {

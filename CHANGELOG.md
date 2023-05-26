@@ -11,13 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 - Show help menu by pressing `?`
 - Options to add unique emoji for each course to remember & find needed courses quicker
 - Option to hide courses #2
-- Show course section & blocks
+- Add course sections & blocks
 - Use `/` to filter, `esc` to cancel (instead of `ctrl+f`)
 - Use moodle colors
 - Help bar padding
 - Show correct version
 - Show status bar
 - Change loading spinner
+- Add `--temp` and `--cache` flags for `where` command
 - Internal structure improved
 
 ## 0.1.0
