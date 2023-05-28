@@ -233,6 +233,7 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 				}
 			}
 
+			c.list.Select(0)
 			return c.list.SetItems(courses)
 		case key.Matches(msg, c.keyMap.ToggleHide):
 			item, ok := c.list.SelectedItem().(coursesItem)
