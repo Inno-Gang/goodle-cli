@@ -18,7 +18,6 @@ import (
 	"github.com/inno-gang/goodle/moodle"
 	"github.com/inno-gang/goodle/richtext"
 	"github.com/samber/lo"
-	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
 )
 
@@ -205,6 +204,32 @@ func (c *Courses) Resize(size base.Size) {
 	c.list.SetSize(size.Width, size.Height)
 }
 
+func (c *Courses) toggleShowHidden() tea.Cmd {
+	c.showHidden = !c.showHidden
+
+	if c.showHidden {
+		c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "show")
+		c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show visible")
+	} else {
+		c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "hide")
+		c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show hidden")
+	}
+
+	var courses []list.Item
+	for _, course := range c.courses {
+		isHidden, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
+
+		show := (c.showHidden && isHidden) || (!c.showHidden && !isHidden)
+
+		if show {
+			courses = append(courses, coursesItem{course, c})
+		}
+	}
+
+	c.list.Select(0)
+	return c.list.SetItems(courses)
+}
+
 func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 	isFiltering := c.list.FilterState() == list.Filtering
 	switch msg := msg.(type) {
@@ -228,30 +253,7 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 
 			return openWithDefaultApp(URL)
 		case key.Matches(msg, c.keyMap.ToggleShowHidden):
-			// TODO: move to a separate method
-			c.showHidden = !c.showHidden
-
-			if c.showHidden {
-				c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "show")
-				c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show visible")
-			} else {
-				c.keyMap.ToggleHide.SetHelp(c.keyMap.ToggleHide.Keys()[0], "hide")
-				c.keyMap.ToggleShowHidden.SetHelp(c.keyMap.ToggleShowHidden.Keys()[0], "show hidden")
-			}
-
-			var courses []list.Item
-			for _, course := range c.courses {
-				isHidden, _ := hiddenCourses.Get(fmt.Sprint(course.Id()), &cache.Empty{})
-
-				show := (c.showHidden && isHidden) || (!c.showHidden && !isHidden)
-
-				if show {
-					courses = append(courses, coursesItem{course, c})
-				}
-			}
-
-			c.list.Select(0)
-			return c.list.SetItems(courses)
+			return c.toggleShowHidden()
 		case key.Matches(msg, c.keyMap.ToggleHide):
 			item, ok := c.list.SelectedItem().(coursesItem)
 			if !ok {
@@ -293,19 +295,7 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 				return nil
 			}
 
-			return tea.Sequence(
-				func() tea.Msg {
-					return NewLoading("Opening...")
-				},
-				func() tea.Msg {
-					err := open.Start(item.Course.MoodleUrl())
-					if err != nil {
-						return err
-					}
-
-					return base.MsgBack{}
-				},
-			)
+			return openWithDefaultApp(item.Course.MoodleUrl())
 		case key.Matches(msg, c.keyMap.Confirm):
 			item, ok := c.list.SelectedItem().(coursesItem)
 			if !ok {

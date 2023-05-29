@@ -14,7 +14,6 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/inno-gang/goodle"
 	"github.com/samber/lo"
-	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/viper"
 	"strings"
 )
@@ -256,22 +255,6 @@ func (b *Blocks) openSelected() tea.Cmd {
 	//default:
 	//	return b.openSelectedInBrowser()
 	//}
-}
-
-func openWithDefaultApp(input string) tea.Cmd {
-	return tea.Sequence(
-		func() tea.Msg {
-			return NewLoading("opening...")
-		},
-		func() tea.Msg {
-			err := open.Run(input)
-			if err != nil {
-				return nil
-			}
-
-			return base.MsgBack{}
-		},
-	)
 }
 
 func (b *Blocks) Update(_ base.Model, msg tea.Msg) (cmd tea.Cmd) {
