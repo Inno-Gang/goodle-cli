@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), and this 
 
 ## 0.2.0
 
+- Open grades page in browser by pressing `d` on course
 - More information for blocks
 - Show help menu by pressing `?`
 - Options to add unique emoji for each course to remember & find needed courses quicker

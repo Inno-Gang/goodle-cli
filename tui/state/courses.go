@@ -91,6 +91,7 @@ func (c coursesItem) Description() string {
 type coursesKeyMap struct {
 	list list.KeyMap
 	OpenBrowser,
+	OpenGrades,
 	Confirm,
 	ToggleHide,
 	ToggleShowHidden key.Binding
@@ -110,6 +111,7 @@ func (c coursesKeyMap) FullHelp() [][]key.Binding {
 		c.ShortHelp(),
 		{
 			c.OpenBrowser,
+			c.OpenGrades,
 			c.ToggleHide,
 			c.ToggleShowHidden,
 		},
@@ -143,6 +145,7 @@ func NewCourses(ctx context.Context, client *moodle.Client) (*Courses, error) {
 		courses: courses,
 		keyMap: coursesKeyMap{
 			OpenBrowser:      util.Bind("open browser", "o"),
+			OpenGrades:       util.Bind("open grades", "d"),
 			Confirm:          util.Bind("confirm", "enter"),
 			ToggleHide:       util.Bind("hide", "backspace"),
 			ToggleShowHidden: util.Bind("show hidden", "H"),
@@ -211,7 +214,21 @@ func (c *Courses) Update(model base.Model, msg tea.Msg) (cmd tea.Cmd) {
 		}
 
 		switch {
+		case key.Matches(msg, c.keyMap.OpenGrades):
+			// https://moodle.innopolis.university/grade/report/user/index.php?id=<ID>
+			item, ok := c.list.SelectedItem().(coursesItem)
+			if !ok {
+				return nil
+			}
+
+			URL := fmt.Sprintf(
+				"https://moodle.innopolis.university/grade/report/user/index.php?id=%d",
+				item.Id(),
+			)
+
+			return openWithDefaultApp(URL)
 		case key.Matches(msg, c.keyMap.ToggleShowHidden):
+			// TODO: move to a separate method
 			c.showHidden = !c.showHidden
 
 			if c.showHidden {
