@@ -169,7 +169,7 @@ func (c *Courses) KeyMap() help.KeyMap {
 
 func (c *Courses) Title() base.Title {
 	if c.showHidden {
-		return base.Title{Text: "Hidden Courses", Background: color.Yellow}
+		return base.Title{Text: "Hidden Courses", Background: color.AccentDarken}
 	}
 
 	return base.Title{Text: "Courses"}

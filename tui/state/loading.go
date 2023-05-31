@@ -56,7 +56,7 @@ func (l *Loading) KeyMap() help.KeyMap {
 func (*Loading) Title() base.Title {
 	return base.Title{
 		Text:       "Loading",
-		Background: color.Yellow,
+		Background: color.AccentDarken,
 	}
 }
 

@@ -101,7 +101,7 @@ to your powershell profile.
 ## Build
 
 You will need [Go compiler](https://go.dev/dl/)
-and [just](https://github.com/casey/just)
+and [just command runner](https://github.com/casey/just)
 
 To compile the app *just* run this command
 
