@@ -20,11 +20,6 @@ var fields = []*Field{
 Available options are: (from less to most verbose)
 fatal, error, warn, info, debug`,
 	},
-	{
-		key.LogsReportCaller,
-		false,
-		"Whether the logger should report the caller location.",
-	},
 	// END LOGS
 
 	// AUTH
@@ -44,6 +39,24 @@ fatal, error, warn, info, debug`,
 		"Remember password. Warning - passwords are stored in a plaintext",
 	},
 	// END AUTH
+
+	// TUI
+	{
+		key.TUIShowSections,
+		false,
+		"Show sections as a separate state",
+	},
+	{
+		key.TUIShowEmoji,
+		true,
+		"Show unique emoji for each course to find courses quicker",
+	},
+	{
+		key.TUIReverseBlocks,
+		false,
+		"Reverse blocks order",
+	},
+	// END TUI
 }
 
 func setDefaults() {

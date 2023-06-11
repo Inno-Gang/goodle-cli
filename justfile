@@ -1,15 +1,15 @@
 #!/usr/bin/env just --justfile
 
 go-mod := `go list`
-flags := '-ldflags="-s -w"'
-
-# Build `goodle-cli`
-build:
-    go build {{flags}}
+flags := '-trimpath -ldflags="-s -w"'
 
 # Run goodle
 run:
     go run .
+
+# Build `goodle-cli`
+build:
+    go build {{flags}}
 
 # Install `goodle-cli` to the GOBIN
 install:

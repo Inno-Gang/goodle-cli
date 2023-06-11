@@ -9,19 +9,19 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ConfigFormat is the format of the config file
+// Format is the format of the config file
 // Available options are: json, yaml, toml
-const ConfigFormat = "toml"
+const Format = "toml"
 
-var EnvKeyReplacer = strings.NewReplacer(".", "_")
+var EnvKeyReplacer = strings.NewReplacer(".", "_", "-", "_")
 
 func Init() error {
 	viper.SetConfigName(app.Name)
-	viper.SetConfigType(ConfigFormat)
+	viper.SetConfigType(Format)
 	viper.SetFs(filesystem.Api())
 	viper.AddConfigPath(where.Config())
 	viper.SetTypeByDefaultValue(true)
-	viper.SetEnvPrefix(app.Name)
+	viper.SetEnvPrefix(EnvKeyReplacer.Replace(app.Name))
 	viper.SetEnvKeyReplacer(EnvKeyReplacer)
 
 	setDefaults()

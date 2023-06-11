@@ -1,6 +1,6 @@
-# bash completion V2 for goodle                               -*- shell-script -*-
+# bash completion V2 for goodle-cli                           -*- shell-script -*-
 
-__goodle_debug()
+__goodle-cli_debug()
 {
     if [[ -n ${BASH_COMP_DEBUG_FILE-} ]]; then
         echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
@@ -9,41 +9,41 @@ __goodle_debug()
 
 # Macs have bash3 for which the bash-completion package doesn't include
 # _init_completion. This is a minimal version of that function.
-__goodle_init_completion()
+__goodle-cli_init_completion()
 {
     COMPREPLY=()
     _get_comp_words_by_ref "$@" cur prev words cword
 }
 
-# This function calls the goodle program to obtain the completion
+# This function calls the goodle-cli program to obtain the completion
 # results and the directive.  It fills the 'out' and 'directive' vars.
-__goodle_get_completion_results() {
+__goodle-cli_get_completion_results() {
     local requestComp lastParam lastChar args
 
     # Prepare the command to request completions for the program.
-    # Calling ${words[0]} instead of directly goodle allows to handle aliases
+    # Calling ${words[0]} instead of directly goodle-cli allows to handle aliases
     args=("${words[@]:1}")
     requestComp="${words[0]} __complete ${args[*]}"
 
     lastParam=${words[$((${#words[@]}-1))]}
     lastChar=${lastParam:$((${#lastParam}-1)):1}
-    __goodle_debug "lastParam ${lastParam}, lastChar ${lastChar}"
+    __goodle-cli_debug "lastParam ${lastParam}, lastChar ${lastChar}"
 
     if [[ -z ${cur} && ${lastChar} != = ]]; then
         # If the last parameter is complete (there is a space following it)
         # We add an extra empty parameter so we can indicate this to the go method.
-        __goodle_debug "Adding extra empty parameter"
+        __goodle-cli_debug "Adding extra empty parameter"
         requestComp="${requestComp} ''"
     fi
 
-    # When completing a flag with an = (e.g., goodle -n=<TAB>)
+    # When completing a flag with an = (e.g., goodle-cli -n=<TAB>)
     # bash focuses on the part after the =, so we need to remove
     # the flag part from $cur
     if [[ ${cur} == -*=* ]]; then
         cur="${cur#*=}"
     fi
 
-    __goodle_debug "Calling ${requestComp}"
+    __goodle-cli_debug "Calling ${requestComp}"
     # Use eval to handle any environment variables and such
     out=$(eval "${requestComp}" 2>/dev/null)
 
@@ -55,11 +55,11 @@ __goodle_get_completion_results() {
         # There is not directive specified
         directive=0
     fi
-    __goodle_debug "The completion directive is: ${directive}"
-    __goodle_debug "The completions are: ${out}"
+    __goodle-cli_debug "The completion directive is: ${directive}"
+    __goodle-cli_debug "The completions are: ${out}"
 }
 
-__goodle_process_completion_results() {
+__goodle-cli_process_completion_results() {
     local shellCompDirectiveError=1
     local shellCompDirectiveNoSpace=2
     local shellCompDirectiveNoFileComp=4
@@ -69,36 +69,36 @@ __goodle_process_completion_results() {
 
     if (((directive & shellCompDirectiveError) != 0)); then
         # Error code.  No completion.
-        __goodle_debug "Received error from custom completion go code"
+        __goodle-cli_debug "Received error from custom completion go code"
         return
     else
         if (((directive & shellCompDirectiveNoSpace) != 0)); then
             if [[ $(type -t compopt) == builtin ]]; then
-                __goodle_debug "Activating no space"
+                __goodle-cli_debug "Activating no space"
                 compopt -o nospace
             else
-                __goodle_debug "No space directive not supported in this version of bash"
+                __goodle-cli_debug "No space directive not supported in this version of bash"
             fi
         fi
         if (((directive & shellCompDirectiveKeepOrder) != 0)); then
             if [[ $(type -t compopt) == builtin ]]; then
                 # no sort isn't supported for bash less than < 4.4
                 if [[ ${BASH_VERSINFO[0]} -lt 4 || ( ${BASH_VERSINFO[0]} -eq 4 && ${BASH_VERSINFO[1]} -lt 4 ) ]]; then
-                    __goodle_debug "No sort directive not supported in this version of bash"
+                    __goodle-cli_debug "No sort directive not supported in this version of bash"
                 else
-                    __goodle_debug "Activating keep order"
+                    __goodle-cli_debug "Activating keep order"
                     compopt -o nosort
                 fi
             else
-                __goodle_debug "No sort directive not supported in this version of bash"
+                __goodle-cli_debug "No sort directive not supported in this version of bash"
             fi
         fi
         if (((directive & shellCompDirectiveNoFileComp) != 0)); then
             if [[ $(type -t compopt) == builtin ]]; then
-                __goodle_debug "Activating no file completion"
+                __goodle-cli_debug "Activating no file completion"
                 compopt +o default
             else
-                __goodle_debug "No file completion directive not supported in this version of bash"
+                __goodle-cli_debug "No file completion directive not supported in this version of bash"
             fi
         fi
     fi
@@ -106,7 +106,7 @@ __goodle_process_completion_results() {
     # Separate activeHelp from normal completions
     local completions=()
     local activeHelp=()
-    __goodle_extract_activeHelp
+    __goodle-cli_extract_activeHelp
 
     if (((directive & shellCompDirectiveFilterFileExt) != 0)); then
         # File extension filtering
@@ -119,7 +119,7 @@ __goodle_process_completion_results() {
         done
 
         filteringCmd="_filedir $fullFilter"
-        __goodle_debug "File filtering command: $filteringCmd"
+        __goodle-cli_debug "File filtering command: $filteringCmd"
         $filteringCmd
     elif (((directive & shellCompDirectiveFilterDirs) != 0)); then
         # File completion for directories only
@@ -127,18 +127,18 @@ __goodle_process_completion_results() {
         local subdir
         subdir=${completions[0]}
         if [[ -n $subdir ]]; then
-            __goodle_debug "Listing directories in $subdir"
+            __goodle-cli_debug "Listing directories in $subdir"
             pushd "$subdir" >/dev/null 2>&1 && _filedir -d && popd >/dev/null 2>&1 || return
         else
-            __goodle_debug "Listing directories in ."
+            __goodle-cli_debug "Listing directories in ."
             _filedir -d
         fi
     else
-        __goodle_handle_completion_types
+        __goodle-cli_handle_completion_types
     fi
 
-    __goodle_handle_special_char "$cur" :
-    __goodle_handle_special_char "$cur" =
+    __goodle-cli_handle_special_char "$cur" :
+    __goodle-cli_handle_special_char "$cur" =
 
     # Print the activeHelp statements before we finish
     if ((${#activeHelp[*]} != 0)); then
@@ -160,14 +160,14 @@ __goodle_process_completion_results() {
 
 # Separate activeHelp lines from real completions.
 # Fills the $activeHelp and $completions arrays.
-__goodle_extract_activeHelp() {
+__goodle-cli_extract_activeHelp() {
     local activeHelpMarker="_activeHelp_ "
     local endIndex=${#activeHelpMarker}
 
     while IFS='' read -r comp; do
         if [[ ${comp:0:endIndex} == $activeHelpMarker ]]; then
             comp=${comp:endIndex}
-            __goodle_debug "ActiveHelp found: $comp"
+            __goodle-cli_debug "ActiveHelp found: $comp"
             if [[ -n $comp ]]; then
                 activeHelp+=("$comp")
             fi
@@ -178,8 +178,8 @@ __goodle_extract_activeHelp() {
     done <<<"${out}"
 }
 
-__goodle_handle_completion_types() {
-    __goodle_debug "__goodle_handle_completion_types: COMP_TYPE is $COMP_TYPE"
+__goodle-cli_handle_completion_types() {
+    __goodle-cli_debug "__goodle-cli_handle_completion_types: COMP_TYPE is $COMP_TYPE"
 
     case $COMP_TYPE in
     37|42)
@@ -201,12 +201,12 @@ __goodle_handle_completion_types() {
 
     *)
         # Type: complete (normal completion)
-        __goodle_handle_standard_completion_case
+        __goodle-cli_handle_standard_completion_case
         ;;
     esac
 }
 
-__goodle_handle_standard_completion_case() {
+__goodle-cli_handle_standard_completion_case() {
     local tab=$'\t' comp
 
     # Short circuit to optimize if we don't have descriptions
@@ -232,16 +232,16 @@ __goodle_handle_standard_completion_case() {
 
     # If there is a single completion left, remove the description text
     if ((${#COMPREPLY[*]} == 1)); then
-        __goodle_debug "COMPREPLY[0]: ${COMPREPLY[0]}"
+        __goodle-cli_debug "COMPREPLY[0]: ${COMPREPLY[0]}"
         comp="${COMPREPLY[0]%%$tab*}"
-        __goodle_debug "Removed description from single completion, which is now: ${comp}"
+        __goodle-cli_debug "Removed description from single completion, which is now: ${comp}"
         COMPREPLY[0]=$comp
     else # Format the descriptions
-        __goodle_format_comp_descriptions $longest
+        __goodle-cli_format_comp_descriptions $longest
     fi
 }
 
-__goodle_handle_special_char()
+__goodle-cli_handle_special_char()
 {
     local comp="$1"
     local char=$2
@@ -254,7 +254,7 @@ __goodle_handle_special_char()
     fi
 }
 
-__goodle_format_comp_descriptions()
+__goodle-cli_format_comp_descriptions()
 {
     local tab=$'\t'
     local comp desc maxdesclength
@@ -265,7 +265,7 @@ __goodle_format_comp_descriptions()
         comp=${COMPREPLY[ci]}
         # Properly format the description string which follows a tab character if there is one
         if [[ "$comp" == *$tab* ]]; then
-            __goodle_debug "Original comp: $comp"
+            __goodle-cli_debug "Original comp: $comp"
             desc=${comp#*$tab}
             comp=${comp%%$tab*}
 
@@ -295,12 +295,12 @@ __goodle_format_comp_descriptions()
                 comp+="  ($desc)"
             fi
             COMPREPLY[ci]=$comp
-            __goodle_debug "Final comp: $comp"
+            __goodle-cli_debug "Final comp: $comp"
         fi
     done
 }
 
-__start_goodle()
+__start_goodle-cli()
 {
     local cur prev words cword split
 
@@ -311,28 +311,28 @@ __start_goodle()
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -n =: || return
     else
-        __goodle_init_completion -n =: || return
+        __goodle-cli_init_completion -n =: || return
     fi
 
-    __goodle_debug
-    __goodle_debug "========= starting completion logic =========="
-    __goodle_debug "cur is ${cur}, words[*] is ${words[*]}, #words[@] is ${#words[@]}, cword is $cword"
+    __goodle-cli_debug
+    __goodle-cli_debug "========= starting completion logic =========="
+    __goodle-cli_debug "cur is ${cur}, words[*] is ${words[*]}, #words[@] is ${#words[@]}, cword is $cword"
 
     # The user could have moved the cursor backwards on the command-line.
     # We need to trigger completion from the $cword location, so we need
     # to truncate the command-line ($words) up to the $cword location.
     words=("${words[@]:0:$cword+1}")
-    __goodle_debug "Truncated words[*]: ${words[*]},"
+    __goodle-cli_debug "Truncated words[*]: ${words[*]},"
 
     local out directive
-    __goodle_get_completion_results
-    __goodle_process_completion_results
+    __goodle-cli_get_completion_results
+    __goodle-cli_process_completion_results
 }
 
 if [[ $(type -t compopt) = "builtin" ]]; then
-    complete -o default -F __start_goodle goodle
+    complete -o default -F __start_goodle-cli goodle-cli
 else
-    complete -o default -o nospace -F __start_goodle goodle
+    complete -o default -o nospace -F __start_goodle-cli goodle-cli
 fi
 
 # ex: ts=4 sw=4 et filetype=sh

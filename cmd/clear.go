@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/Inno-Gang/goodle-cli/app"
 	"github.com/Inno-Gang/goodle-cli/color"
 	"github.com/Inno-Gang/goodle-cli/filesystem"
 	"github.com/Inno-Gang/goodle-cli/icon"
-	"github.com/Inno-Gang/goodle-cli/util"
 	"github.com/Inno-Gang/goodle-cli/where"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -45,7 +45,7 @@ var clearCmd = &cobra.Command{
 		for _, n := range clearTargets {
 			if lo.Must(cmd.Flags().GetBool(n.name)) {
 				handleErr(n.clear())
-				fmt.Printf("%s %s cleared\n", successStyle(icon.Check), util.Capitalize(n.name))
+				fmt.Printf("%s %s cleared\n", successStyle(icon.Check), stringutil.Capitalize(n.name))
 				didSomething = true
 			}
 		}

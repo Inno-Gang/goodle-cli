@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	Success = lipgloss.NewStyle().Foreground(color.Green).Render
-	Failure = lipgloss.NewStyle().Foreground(color.Red).Render
-	Warning = lipgloss.NewStyle().Foreground(color.Yellow).Render
+	Success = lipgloss.NewStyle().Foreground(color.Green)
+	Failure = lipgloss.NewStyle().Foreground(color.Red)
+	Warning = lipgloss.NewStyle().Foreground(color.Yellow)
 )
 
 var (

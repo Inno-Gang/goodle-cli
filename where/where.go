@@ -1,9 +1,13 @@
 package where
 
 import (
+	"fmt"
+	"github.com/Inno-Gang/goodle-cli/filesystem"
+	"github.com/samber/lo"
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/Inno-Gang/goodle-cli/app"
 )
@@ -46,6 +50,16 @@ func Config() string {
 // Will create the directory if it doesn't exist
 func Logs() string {
 	return mkdir(filepath.Join(Cache(), "logs"))
+}
+
+func LogFile() string {
+	today := time.Now().Format("2006-01-02")
+	logFilePath := filepath.Join(Logs(), fmt.Sprintf("%s.log", today))
+	if !lo.Must(filesystem.Api().Exists(logFilePath)) {
+		lo.Must(filesystem.Api().Create(logFilePath))
+	}
+
+	return logFilePath
 }
 
 // Cache path

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/Inno-Gang/goodle-cli/stringutil"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/reflow/wordwrap"
 	"strings"
@@ -9,9 +10,23 @@ import (
 func (m *Model) View() string {
 	const newline = "\n"
 
-	header := m.styles.TitleBar.Render(m.styles.Title.Render(m.state.Title()))
+	title := m.state.Title()
+	titleStyle := m.styles.Title.Copy()
+
+	if title.Background != "" {
+		titleStyle.Background(title.Background)
+	}
+
+	if title.Foreground != "" {
+		titleStyle.Foreground(title.Foreground)
+	}
+
+	titleText := stringutil.Trim(title.Text, m.size.Width/2)
+
+	header := m.styles.TitleBar.Render(titleStyle.Render(titleText) + " " + m.state.Status())
 	view := wordwrap.String(m.state.View(m), m.size.Width)
-	keyMapHelp := m.help.View(m)
+
+	keyMapHelp := m.styles.HelpBar.Render(m.help.View(m))
 
 	headerHeight := lipgloss.Height(header)
 	viewHeight := lipgloss.Height(view)

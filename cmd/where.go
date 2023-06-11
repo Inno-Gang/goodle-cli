@@ -22,6 +22,8 @@ type whereTarget struct {
 var wherePaths = []whereTarget{
 	{"Config", where.Config, "c", "config"},
 	{"Logs", where.Logs, "l", "logs"},
+	{"Cache", where.Cache, "", "cache"},
+	{"Temp", where.Temp, "", "temp"},
 }
 
 func init() {
